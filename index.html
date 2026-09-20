@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Bookmark Database Editor v1.6 — Local Database</title>
+<title>Bookmark Database Editor v1.7 — Local Database</title>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#697386;--line:#e5e9f0;--accent:#2563eb;--danger:#dc2626;--chip:#eef2ff;--inc:#dcfce7;--exc:#fee2e2;--inc-t:#166534;--exc-t:#991b1b;--cat:#fef3c7;--cat-t:#92400e;--male:#2563eb;--female:#dc2626;--artist:#7c3aed;--series:#16a34a;--tag:#111827;--character:#0e7490;--character-bg:#cffafe;--character-line:#67e8f9;--production:#db2777;--character-male:#0e7490;--character-female:hsl(0 82.278% 30.98%);--character-both:hsl(270 82.278% 30.98%)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -141,7 +141,7 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <body>
 <div class="app">
 <header>
-  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.6 · 구형 기능 보존형 + 기능 모듈</div></div>
+  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.7 · 구형 기능 보존형 + 기능 모듈</div></div>
   <div class="toolbar">
     <button class="btn primary hidden" id="addBtn">＋ 북마크</button>
     <button class="btn" id="importBtn">가져오기</button>
@@ -289,10 +289,6 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
   </div>
 </div>
 
-    <div class="field"><label>비밀번호</label><input id="loginPasswordInput" type="password" inputmode="numeric" autocomplete="current-password" enterkeyhint="done" placeholder="비밀번호"></div>
-    <div class="modal-actions"><button class="btn" id="loginCancelBtn">취소</button><button class="btn primary" id="loginSubmitBtn">로그인</button></div>
-  </div>
-</div>
 
 <div class="modal" id="importModal">
   <div class="dialog">
@@ -504,7 +500,22 @@ function currentTab(){return allTabs().find(t=>t.id===wsTab)||defaultTabs()[0]}
 function openPageAdd(){const m=$("pageAddModal");if(!m)return;$("pageAddName").value="";m.classList.add("open");setTimeout(()=>$("pageAddName")?.focus(),0)}
 function openTabAdd(){if(!activeTopId)return alert("먼저 Page를 선택하세요.");$("tabAddName").value="";$("tabAddType").value="custom";$("tabAddPageHint").textContent="현재 Page: "+(getCat(activeTopId)?.name||"");$("tabAddModal").classList.add("open");setTimeout(()=>$("tabAddName")?.focus(),0)}
 function openTabEdit(id){const t=customTabs.find(x=>x.id===id);if(!t)return;$("tabEditId").value=id;$("tabEditName").value=t.name;$("tabEditType").value=t.type||"custom";$("tabEditModal").classList.add("open");}
-async function createPage(){const n=$("pageAddName").value.trim();if(!n)return alert("Page 이름을 입력하세요.");if(categories.some(c=>c.name===n&&!c.parentId)){return alert("동일한 최상위 Page가 이미 존재합니다.")};await addCat(n);$("pageAddModal").classList.remove("open");activeTopId=categories.find(c=>c.name===n&&!c.parentId)?.id||activeTopId;wsTab="main";render()}
+async function createPage(){
+  const input=$("pageAddName");
+  const n=(input?.value||"").trim();
+  if(!n){alert("Page 이름을 입력하세요.");input?.focus();return false}
+  if(categories.some(c=>c.name===n&&(c.parentId||null)===null)){alert("동일한 최상위 Page가 이미 존재합니다.");input?.focus();return false}
+  const c={id:uid(),name:n,parentId:null};
+  try{
+    await put(SC,c);
+    categories.push(c);
+    activeTopId=c.id;
+    wsTab="main";
+    $("pageAddModal")?.classList.remove("open");
+    render();
+    return true;
+  }catch(err){console.error("Page creation failed",err);alert("Page 생성에 실패했습니다: "+(err?.message||err));return false}
+}
 function createTab(){const n=$("tabAddName").value.trim();if(!n)return alert("Tab 이름을 입력하세요.");if(allTabs().some(t=>t.name===n))return alert("동일한 Tab 이름이 이미 존재합니다.");const t={id:"tab_"+uid(),name:n,type:$("tabAddType").value||"custom",builtin:false,createdAt:Date.now()};customTabs.push(t);savePageTabs();$("tabAddModal").classList.remove("open");wsTab=t.id;render()}
 function updateTab(){const id=$("tabEditId").value,t=customTabs.find(x=>x.id===id);if(!t)return;const n=$("tabEditName").value.trim();if(!n)return alert("Tab 이름을 입력하세요.");if(customTabs.some(x=>x.id!==id&&x.name===n)||defaultTabs().some(x=>x.name===n))return alert("동일한 Tab 이름이 이미 존재합니다.");t.name=n;t.type=$("tabEditType").value||"custom";savePageTabs();$("tabEditModal").classList.remove("open");render()}
 function deleteTab(){const id=$("tabEditId").value,t=customTabs.find(x=>x.id===id);if(!t)return;if(!confirm('"'+t.name+'" Tab을 삭제할까요?'))return;customTabs=customTabs.filter(x=>x.id!==id);savePageTabs();$("tabEditModal").classList.remove("open");wsTab="main";render()}
@@ -1327,7 +1338,19 @@ openDB().then(async()=>{await refresh()}).catch(e=>{
 function open(){if(!window.activeTopId)return alert('먼저 Page를 선택하세요.');const m=mods();Object.keys(D).forEach(k=>{const e=q('mod'+k[0].toUpperCase()+k.slice(1));if(e)e.checked=!!m[k]});q('pageModuleHint').textContent='현재 Page: '+(window.getCat?.(window.activeTopId)?.name||'');q('pageModuleModal').classList.add('open')}
 function apply(){const m={};Object.keys(D).forEach(k=>m[k]=!!q('mod'+k[0].toUpperCase()+k.slice(1))?.checked);const a=read();a[window.activeTopId]={...D,...m};localStorage.setItem(KEY,JSON.stringify(a));q('pageModuleModal').classList.remove('open');window.render?.()}
 function ui(){if(!window.activeTopId)return;const m=mods(),hide=(e,v)=>e?.classList.toggle('hidden',!!v);hide(document.querySelector('[data-ws="main"]'),!m.bookmark);hide(document.querySelector('[data-ws="tags"]'),!m.tags);hide(document.querySelector('[data-ws="profiles"]'),!m.profiles);hide(q('addBtn'),!m.bookmark);hide(q('subCatFilter'),!m.categories);hide(q('sortDirBtn'),!m.bookmark);hide(q('charField'),!m.characters||!m.profileCharacterLink);hide(q('catPickerInput'),!m.categories);hide(q('selectedCat'),!m.categories);if(wsTab==='main'&&!m.bookmark)wsTab=m.tags?'tags':m.profiles?'profiles':'main';if(wsTab==='tags'&&!m.tags)wsTab=m.bookmark?'main':m.profiles?'profiles':'main';if(wsTab==='profiles'&&!m.profiles)wsTab=m.bookmark?'main':m.tags?'tags':'main'}
-window.getPageModules=mods;window.applyPageModules=ui;document.addEventListener('DOMContentLoaded',()=>{q('pageModuleBtn')?.addEventListener('click',open);q('pageModuleCancel')?.addEventListener('click',()=>q('pageModuleModal').classList.remove('open'));q('pageModuleApply')?.addEventListener('click',apply);q('mainGridBtn')?.addEventListener('click',()=>{mainPageLayout='grid';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainListBtn')?.addEventListener('click',()=>{mainPageLayout='list';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainSortBtn')?.addEventListener('click',()=>{mainPageSort=mainPageSort==='asc'?'desc':'asc';localStorage.setItem('tagmark-main-page-sort',mainPageSort);render()});q('addTopPageBtn')?.addEventListener('click',openPageAdd);q('pageAddCancel')?.addEventListener('click',()=>q('pageAddModal').classList.remove('open'));q('pageAddApply')?.addEventListener('click',createPage);q('pageAddName')?.addEventListener('keydown',e=>{if(e.key==='Enter')createPage()});q('tabAddCancel')?.addEventListener('click',()=>q('tabAddModal').classList.remove('open'));q('tabAddApply')?.addEventListener('click',createTab);q('tabAddName')?.addEventListener('keydown',e=>{if(e.key==='Enter')createTab()});q('tabEditCancel')?.addEventListener('click',()=>q('tabEditModal').classList.remove('open'));q('tabEditApply')?.addEventListener('click',updateTab);q('tabEditDelete')?.addEventListener('click',deleteTab);});const wait=setInterval(()=>{if(typeof window.render==='function'){clearInterval(wait);const r=window.render;window.render=function(){r();setTimeout(ui,0)}}},20)})();
+window.getPageModules=mods;window.applyPageModules=ui;function bindV16Controls(){
+  const bind=(id,event,fn)=>{const el=q(id);if(el&&!el.dataset.boundV17){el.dataset.boundV17="1";el.addEventListener(event,fn)}};
+  bind('pageModuleBtn','click',open);bind('pageModuleCancel','click',()=>q('pageModuleModal').classList.remove('open'));bind('pageModuleApply','click',apply);
+  bind('mainGridBtn','click',()=>{mainPageLayout='grid';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});
+  bind('mainListBtn','click',()=>{mainPageLayout='list';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});
+  bind('mainSortBtn','click',()=>{mainPageSort=mainPageSort==='asc'?'desc':'asc';localStorage.setItem('tagmark-main-page-sort',mainPageSort);render()});
+  bind('addTopPageBtn','click',openPageAdd);bind('pageAddCancel','click',()=>q('pageAddModal').classList.remove('open'));bind('pageAddApply','click',createPage);bind('pageAddName','keydown',e=>{if(e.key==='Enter'){e.preventDefault();createPage()}});
+  bind('tabAddCancel','click',()=>q('tabAddModal').classList.remove('open'));bind('tabAddApply','click',createTab);bind('tabAddName','keydown',e=>{if(e.key==='Enter'){e.preventDefault();createTab()}});
+  bind('tabEditCancel','click',()=>q('tabEditModal').classList.remove('open'));bind('tabEditApply','click',updateTab);bind('tabEditDelete','click',deleteTab);
+}
+bindV16Controls();
+document.addEventListener('click',e=>{const b=e.target.closest?.('#addTopPageBtn');if(b){e.preventDefault();openPageAdd()}},{capture:true});
+const wait=setInterval(()=>{if(typeof window.render==='function'){clearInterval(wait);const r=window.render;window.render=function(){r();setTimeout(()=>{bindV16Controls();ui()},0)}}},20)})();
 </script>
 <style>
 .main-page-panel{display:flex;flex-direction:column;min-height:calc(100vh - 145px);overflow:hidden}.main-page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}.main-page-head .cat-title{margin:0 0 5px;padding:0;border:0}.main-page-tools{display:flex;gap:6px;flex-wrap:wrap}.main-page-scroll{flex:1;min-height:0;overflow:auto;padding:14px}.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-content:start}.page-list{display:flex;flex-direction:column;gap:8px}.page-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;box-shadow:0 2px 8px #00000008}.page-card-open{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border:0;background:transparent;text-align:left;color:inherit}.page-card-open:hover{background:#f8fafc}.page-card-icon{width:38px;height:38px;border-radius:10px;background:var(--chip);display:grid;place-items:center;color:var(--accent);font-weight:800;flex:0 0 auto}.page-card-main{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.page-card-main strong{font-size:16px;overflow-wrap:anywhere}.page-card-main small{font-size:11px;color:var(--muted)}.page-card-arrow{font-size:25px;color:var(--muted)}.page-card-actions{display:flex;gap:5px;padding:0 12px 12px;justify-content:flex-end}.page-list .page-card-open{padding:11px 14px}.page-list .page-card-actions{padding:0 10px 10px}.page-head-row{display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line);padding:0 10px}.page-head-row .tabs{border-bottom:0;flex:1}.tab-add{font-size:18px;min-width:38px}.module-dialog{max-width:680px}.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.module-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfe;cursor:pointer}.module-row span{display:flex;flex-direction:column;gap:3px}.module-row small{color:var(--muted);font-size:11px}.module-row input{width:18px;height:18px;flex:none}.module-note{margin-top:14px;padding:10px 12px;border-radius:10px;background:#f5f7fb;color:var(--muted);font-size:11px}.sync-box{display:none!important}@media(max-width:650px){.module-grid{grid-template-columns:1fr}.main-page-head{padding:12px}.main-page-scroll{padding:9px}.page-grid{grid-template-columns:1fr}}
