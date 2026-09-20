@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Tagmark v2.40 — Supabase Sync</title>
+<title>Bookmark Database Editor v1.5 — Local Database</title>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#697386;--line:#e5e9f0;--accent:#2563eb;--danger:#dc2626;--chip:#eef2ff;--inc:#dcfce7;--exc:#fee2e2;--inc-t:#166534;--exc-t:#991b1b;--cat:#fef3c7;--cat-t:#92400e;--male:#2563eb;--female:#dc2626;--artist:#7c3aed;--series:#16a34a;--tag:#111827;--character:#0e7490;--character-bg:#cffafe;--character-line:#67e8f9;--production:#db2777;--character-male:#0e7490;--character-female:hsl(0 82.278% 30.98%);--character-both:hsl(270 82.278% 30.98%)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -74,7 +74,6 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 .field textarea{min-height:70px;resize:vertical}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 .hidden{display:none!important}
-.sync-box{margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sync-status{font-size:12px;color:var(--muted);flex:1;min-width:180px}.sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9ca3af;margin-right:6px}.sync-dot.ok{background:#16a34a}.sync-dot.busy{background:#f59e0b}.sync-dot.err{background:#dc2626}.sync-user{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 .importbox{border:1px dashed #b9c2d0;padding:14px;border-radius:12px;background:#fafbfe}
 .hint{font-size:12px;color:var(--muted);line-height:1.5}
 .picker,.search-wrap{position:relative;z-index:1}.picker:focus-within,.picker.is-open,.search-wrap:focus-within,.search-wrap.is-open{z-index:6000}
@@ -107,8 +106,6 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
   header{padding:10px 2px 7px;gap:7px}
   .logo{font-size:19px}.sub{font-size:10px}
   header .toolbar{gap:5px}.toolbar .btn{padding:7px 8px;font-size:12px}
-  .sync-box{margin-bottom:6px;padding:6px 8px;gap:5px}
-  .sync-status{min-width:0;font-size:10px}.sync-user{font-size:10px}
   .crumb{margin-bottom:6px;font-size:12px}
   #view-main{height:calc(100vh - 135px);min-height:0;max-height:none;border-radius:12px}
   #ws-tabs{min-height:0}
@@ -130,7 +127,6 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 @media(max-width:430px){
   .sort-dir{font-size:10px}.sort-dir input{margin:0}
   header .toolbar .btn{font-size:11px;padding:6px 6px}
-  .sync-box .btn{font-size:10px;padding:5px 6px}
   #ws-main .searchbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center}
   #ws-main .search-wrap{grid-column:1 / -1}
   #ws-main #subCatFilter{grid-column:1 / -1;width:100%}
@@ -145,47 +141,32 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <body>
 <div class="app">
 <header>
-  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.4 · 구형 기능 보존형 + 기능 모듈</div></div>
+  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.5 · 구형 기능 보존형 + 기능 모듈</div></div>
   <div class="toolbar">
     <button class="btn primary hidden" id="addBtn">＋ 북마크</button>
     <button class="btn" id="importBtn">가져오기</button>
-    <button class="btn" id="exportBtn">백업</button><button class="btn" id="pageModuleBtn">페이지 기능</button>
+    <button class="btn" id="exportBtn">백업</button>
   </div>
 </header>
 
-<div class="sync-box" id="syncBox">
-  <span class="sync-dot" id="syncDot"></span>
-  <span class="sync-status" id="syncStatus">Supabase 동기화: 설정 필요</span>
-  <span class="sync-user" id="syncUser"></span>
-  <button class="btn sm hidden" id="syncNicknameBtn">닉네임 설정</button>
-  <button class="btn sm" id="syncLoginBtn">로그인</button>
-  <button class="btn sm hidden" id="syncPushBtn">클라우드에 업로드</button>
-  <button class="btn sm hidden" id="syncPullBtn">클라우드로부터 다운로드</button>
-  <button class="btn sm hidden" id="syncLogoutBtn">로그아웃</button>
-</div>
 
 <!-- 상하 구조 내비: 카테고리 관리 > 최상위 카테고리 -->
 <div class="crumb" id="crumb"></div>
 
 <!-- 카테고리 관리 (최상위 페이지) -->
-<div id="view-manage" class="panel side">
-  <div class="side-title"><span>카테고리 관리</span></div>
-  <p class="hint">카테고리 관리(상위)에서 최상위 카테고리를 만든 뒤 이름을 누르면 해당 메인·태그 페이지(하위)로 들어갑니다.</p>
-  <div class="cat-list" id="catManageList"></div>
-  <div class="manage">
-    <div class="side-title" style="margin-bottom:8px">최상위 카테고리 추가</div>
-    <input id="newTopCat" placeholder="">
-    <button class="btn primary" id="addTopCat" style="width:100%">추가</button>
+<div id="view-manage" class="panel main-page-panel">
+  <div class="main-page-head">
+    <div><div class="cat-title">Main Page</div><div class="hint">구형의 최상위 카테고리 = 신형의 Page. Page를 열면 신형의 Tab 구조 안에서 구형 기능을 사용합니다.</div></div>
+    <div class="main-page-tools"><button class="btn sm" id="mainGridBtn">▦ 그리드</button><button class="btn sm" id="mainListBtn">☷ 목록</button><button class="btn sm" id="mainSortBtn">A→Z</button><button class="btn sm primary" id="addTopPageBtn">＋ Page</button></div>
   </div>
+  <div class="main-page-scroll"><div class="page-grid" id="catManageList"></div></div>
 </div>
 
 <!-- 워크스페이스: 메인(검색) -->
 <div id="view-main" class="panel hidden">
-  <div class="tabs" id="wsTabs">
-    <button class="tab active" data-ws="main">메인</button>
-    <button class="tab" data-ws="tags">태그 관리</button>
-    <button class="tab" data-ws="profiles">프로필</button>
-  </div>
+  <div class="page-head-row"><div class="tabs" id="wsTabs">
+    <button class="tab active" data-ws="main">메인</button><button class="tab" data-ws="tags">태그 관리</button><button class="tab" data-ws="profiles">프로필</button><button class="tab tab-add" id="addTabBtn">＋</button>
+  </div><button class="btn sm" id="pageModuleBtn">페이지 기능</button></div>
   <div id="ws-main">
     <div class="searchbar">
       <div class="search-wrap"><input class="search" id="search" placeholder=""><div class="search-suggest" id="searchSuggest"></div></div>
@@ -308,10 +289,6 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
   </div>
 </div>
 
-<div class="modal" id="loginModal">
-  <div class="dialog login-dialog">
-    <h2>로그인</h2>
-    <div class="field"><label>이메일 / 닉네임</label><input id="loginIdInput" autocomplete="username" placeholder="이메일 또는 한 글자 닉네임"></div>
     <div class="field"><label>비밀번호</label><input id="loginPasswordInput" type="password" inputmode="numeric" autocomplete="current-password" enterkeyhint="done" placeholder="비밀번호"></div>
     <div class="modal-actions"><button class="btn" id="loginCancelBtn">취소</button><button class="btn primary" id="loginSubmitBtn">로그인</button></div>
   </div>
@@ -327,15 +304,13 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
     <div class="modal-actions"><button class="btn" id="importCancel">닫기</button></div>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const DB="tagmark-local-v1", SB="bookmarks", ST="registeredTags", SC="categories", STI="tagIndex", SF="bookmarkFolders";
 let db, items=[], registeredTags=[], registeredTagMeta=[], categories=[], folders=[];
 let tagStates={}, activeTopId=null, includeDesc=true, expanded=new Set(), tagFilterOpenKinds=new Set(), tagManageOpenKinds=new Set(), profileOpenFolders=new Set();
 function tagCode(t){let h=2166136261;for(const ch of String(t||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
 function loadTagFilterStates(){try{const x=JSON.parse(localStorage.getItem("tagmark-tag-filter-states")||"{}");const map=new Map(registeredTags.map(t=>[tagCode(t),t]));const cv=a=>(Array.isArray(a)?a:[]).map(v=>map.get(String(v))||v).filter(v=>registeredTags.includes(v));tagStates={include:cv(x.include),exclude:cv(x.exclude)};}catch(e){tagStates={include:[],exclude:[]}}}
-function saveTagFilterStates(){const cv=a=>[...new Set(a||[])].map(tagCode);localStorage.setItem("tagmark-tag-filter-states",JSON.stringify({include:cv(tagStates.include),exclude:cv(tagStates.exclude)}));if(syncInitialized&&!applyingRemote)scheduleCloudPush()}
+function saveTagFilterStates(){const cv=a=>[...new Set(a||[])].map(tagCode);localStorage.setItem("tagmark-tag-filter-states",JSON.stringify({include:cv(tagStates.include),exclude:cv(tagStates.exclude)}));}
 function tagState(tag){return (tagStates.include||[]).includes(tag)?"include":(tagStates.exclude||[]).includes(tag)?"exclude":""}
 let editingId=null, curTags=[], curCatId=null, curChars=[];
 let wsTab="main"; // main | tags | profiles
@@ -343,225 +318,7 @@ let characterPageFilter="";
 let selectedIds=new Set(),characterClipboard=null;
 const $=id=>document.getElementById(id);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2);
-
-/* Supabase single-file cloud sync
-   One authenticated user -> one fixed cloud record: tagmark_main.
-   Local IndexedDB is the working copy. Sync uses explicit overwrite direction
-   when choosing which side should be the source; afterwards local edits upload
-   and realtime cloud edits download. Deletions are intentionally synchronized.
-*/
-const SUPABASE_URL = "https://ogfcrdayneneylxurudv.supabase.co";
-window.addEventListener("error",e=>{if(String(e?.message||"").includes("supabase"))console.error("Supabase SDK error",e)});
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lbermbhd3O8mjN6SaioreA_nLVsVrkm";
-const CLOUD_FILE_ID = "tagmark_main";
-const SYNC_SCHEMA_VERSION = 9;
-let supabaseClient=null, syncChannel=null, syncTimer=null, syncBusy=false, applyingRemote=false, syncReady=false, syncInitialized=false;
-let syncUser=null, syncHandledUserId=null, syncNickname="", syncBackgroundUserId=null;
-const syncConfigured=()=>SUPABASE_URL.startsWith("https://") && SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_");
-function setSyncStatus(text,state=""){const s=$("syncStatus"),d=$("syncDot");if(s)s.textContent=text;if(d)d.className="sync-dot "+(state||"")}
-function setSyncButtons(){
-  $("syncLoginBtn")?.classList.toggle("hidden",!!syncUser);
-  $("syncLogoutBtn")?.classList.toggle("hidden",!syncUser);
-  $("syncPushBtn")?.classList.toggle("hidden",!syncUser);
-  $("syncPullBtn")?.classList.toggle("hidden",!syncUser);
-  $("syncNicknameBtn")?.classList.toggle("hidden",!syncUser);
-  if($("syncUser"))$("syncUser").textContent=syncUser?(syncNickname?syncNickname+" · "+(syncUser.email||""):(syncUser.email||"")):"";
-}
-function markLocalDirty(){if(applyingRemote)return;localStorage.setItem("tagmark-local-dirty-at",String(Date.now()));}
-async function cloudSnapshot(){
-  return {schemaVersion:SYNC_SCHEMA_VERSION,exportedAt:new Date().toISOString(),bookmarks:await all(SB),folders:await all(SF),registeredTags:await all(ST),categories:await all(SC),tagFilterStates:{include:[...new Set((tagStates.include||[]).map(tagCode))],exclude:[...new Set((tagStates.exclude||[]).map(tagCode))]},visibleKinds:JSON.parse(localStorage.getItem("tagmark-visible-kinds")||"null")};
-}
-async function replaceLocalFromCloud(data){
-  if(!data||typeof data!=="object")throw new Error("클라우드 데이터 형식이 올바르지 않습니다.");
-  applyingRemote=true;
-  try{
-    const oldB=await all(SB),oldF=await all(SF),oldT=await all(ST),oldC=await all(SC);
-    for(const r of oldB)await del(SB,r.id,{skipSync:true});
-    for(const r of oldF)await del(SF,r.id,{skipSync:true});
-    for(const r of oldT)await del(ST,r.name,{skipSync:true});
-    for(const r of oldC)await del(SC,r.id,{skipSync:true});
-    for(const r of (data.bookmarks||[]))if(r?.id)await put(SB,r,{skipSync:true});
-    for(const r of (data.folders||[]))if(r?.id)await put(SF,r,{skipSync:true});
-    for(const r0 of (data.registeredTags||[])){
-  const tagRecord=typeof r0==="string"?{name:r0}:r0;
-  if(tagRecord?.name)await put(ST,tagRecord,{skipSync:true});
-}
-    for(const r of (data.categories||[]))if(r?.id)await put(SC,r,{skipSync:true});
-    await loadTagIndex();await ensureTagIds(registeredTags);if(data.tagFilterStates&&typeof data.tagFilterStates==="object"){const map=new Map(registeredTags.map(t=>[tagCode(t),t]));const cv=a=>(a||[]).map(v=>map.get(String(v))||v).filter(v=>registeredTags.includes(v));tagStates={include:cv(data.tagFilterStates.include),exclude:cv(data.tagFilterStates.exclude)};saveTagFilterStates()}
-    if(Array.isArray(data.visibleKinds))localStorage.setItem("tagmark-visible-kinds",JSON.stringify(data.visibleKinds));
-    else localStorage.removeItem("tagmark-visible-kinds");
-    await refresh();
-    localStorage.removeItem("tagmark-local-dirty-at");
-  }finally{applyingRemote=false}
-}
-async function fetchCloud(){
-  const {data,error}=await supabaseClient.from("tagmark_files").select("data,updated_at").eq("user_id",syncUser.id).eq("file_id",CLOUD_FILE_ID).maybeSingle();
-  if(error)throw error;return data||null;
-}
-async function writeCloud(payload,reason="auto"){
-  const {data,error}=await supabaseClient.from("tagmark_files").upsert({file_id:CLOUD_FILE_ID,user_id:syncUser.id,data:payload,updated_at:new Date().toISOString()},{onConflict:"user_id,file_id"}).select("updated_at").single();
-  if(error)throw error;
-  const at=Date.parse(data?.updated_at||"")||Date.now();
-  localStorage.setItem("tagmark-last-cloud-sync",String(at));
-  localStorage.removeItem("tagmark-local-dirty-at");
-  setSyncStatus(reason==="manual"?"클라우드에 저장됨":"자동 동기화됨","ok");
-}
-async function pushCloud(reason="auto"){
-  if(!syncUser||!supabaseClient||syncBusy)return false;
-  syncBusy=true;setSyncStatus(reason==="manual"?"현재 기기 → 클라우드 저장 중…":"변경사항 클라우드 저장 중…","busy");
-  try{await writeCloud(await cloudSnapshot(),reason);return true}
-  catch(e){console.error(e);setSyncStatus("동기화 실패: "+(e.message||e),"err");return false}
-  finally{syncBusy=false}
-}
-function scheduleCloudPush(){
-  if(!syncInitialized||applyingRemote||!syncUser||!supabaseClient)return;
-  markLocalDirty();
-  clearTimeout(syncTimer);
-  syncTimer=setTimeout(()=>pushCloud("auto"),700);
-}
-async function initialReconcile(){
-  if(!syncUser||!supabaseClient)return;
-
-  setSyncStatus("클라우드와 연결 중…","busy");
-
-  try{
-    const cloud=await fetchCloud();
-
-    // 최초 접속에서는 업로드/다운로드하지 않고
-    // 현재 기기의 로컬 데이터를 그대로 유지한다.
-    if(!cloud){
-      setSyncStatus("클라우드 데이터 없음 · 로컬 유지","ok");
-    }else{
-      setSyncStatus("클라우드 연결됨 · 로컬 유지","ok");
-    }
-
-    syncInitialized=true;
-
-  }catch(e){
-    console.error(e);
-    setSyncStatus("클라우드 확인 실패 · 로컬 유지","err");
-    syncInitialized=true;
-  }
-}
-async function pullCloud({force=false}={}){
-  if(!syncUser||!supabaseClient)return;
-  if(!db){setSyncStatus("클라우드 읽기 실패: 로컬 DB가 아직 준비되지 않았습니다.","err");return;}
-  setSyncStatus("클라우드 확인 중…","busy");
-  try{
-    const cloud=await fetchCloud();
-    if(!cloud){setSyncStatus("클라우드 파일이 없습니다.","");return;}
-    if(force){
-      if(!confirm("클라우드 데이터를 현재 기기에 적용할까요?\n\n현재 기기의 로컬 데이터는 클라우드 데이터로 완전히 교체됩니다.\n삭제된 태그/북마크도 그대로 반영됩니다."))return;
-      await replaceLocalFromCloud(cloud.data);localStorage.setItem("tagmark-last-cloud-sync",String(Date.parse(cloud.updated_at||"")||Date.now()));setSyncStatus("클라우드 → 현재 기기 적용 완료","ok");
-    }else await initialReconcile();
-  }catch(e){console.error(e);setSyncStatus("클라우드 읽기 실패: "+e.message,"err")}
-}
-async function startRealtime(){
-  if(syncChannel)await supabaseClient.removeChannel(syncChannel);
-  syncChannel=supabaseClient.channel("tagmark-file-"+syncUser.id)
-    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"tagmark_files",filter:`user_id=eq.${syncUser.id}`},async payload=>{
-      if(payload.new?.file_id!==CLOUD_FILE_ID||applyingRemote)return;
-      const remoteAt=Date.parse(payload.new.updated_at||"")||0;
-      const lastCloud=Number(localStorage.getItem("tagmark-last-cloud-sync")||0);
-      if(remoteAt && remoteAt<=lastCloud)return;
-      try{await replaceLocalFromCloud(payload.new.data);localStorage.setItem("tagmark-last-cloud-sync",String(remoteAt||Date.now()));setSyncStatus("다른 기기 변경사항 적용됨","ok");}
-      catch(e){console.error(e);setSyncStatus("원격 변경 적용 실패","err")}
-    })
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"tagmark_files",filter:`user_id=eq.${syncUser.id}`},async payload=>{
-      if(payload.new?.file_id!==CLOUD_FILE_ID||applyingRemote)return;
-      try{await replaceLocalFromCloud(payload.new.data);localStorage.setItem("tagmark-last-cloud-sync",String(Date.parse(payload.new.updated_at||"")||Date.now()));setSyncStatus("클라우드 파일 적용됨","ok");}
-      catch(e){console.error(e);setSyncStatus("클라우드 파일 적용 실패","err")}
-    })
-    .subscribe(status=>{if(status==="SUBSCRIBED"){syncReady=true;setSyncStatus("실시간 동기화 연결됨","ok")}else if(status==="CHANNEL_ERROR")setSyncStatus("실시간 연결 오류 · 재연결 중…","err")});
-}
-async function loadSyncNickname(){
-  syncNickname="";
-  if(!syncUser||!supabaseClient)return;
-  try{
-    const {data,error}=await supabaseClient.from("tagmark_profiles").select("nickname").eq("user_id",syncUser.id).maybeSingle();
-    if(!error)syncNickname=(data?.nickname||"").trim();
-  }catch(e){console.warn("닉네임 조회 실패",e)}
-  setSyncButtons();
-}
-async function setSyncNickname(){
-  if(!syncUser||!supabaseClient)return;
-  const current=syncNickname||"";
-  const nickname=prompt("닉네임을 입력하세요 (1글자)",current);
-  if(nickname===null)return;
-  const n=nickname.trim();
-  if([...n].length!==1){alert("닉네임은 한 글자로 입력해주세요.");return}
-  setSyncStatus("닉네임 저장 중…","busy");
-  const {error}=await supabaseClient.from("tagmark_profiles").upsert({user_id:syncUser.id,nickname:n,updated_at:new Date().toISOString()},{onConflict:"user_id"});
-  if(error){console.error(error);setSyncStatus("닉네임 저장 실패: "+(error.message||error),"err");return}
-  syncNickname=n;setSyncButtons();setSyncStatus("닉네임 저장됨","ok");
-}
-function withTimeout(promise,ms,label){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+" 시간 초과")),ms))])}
-async function resolveLoginEmail(loginId){
-  const v=loginId.trim();
-  if(v.includes("@"))return v;
-  if([...v].length!==1)throw new Error("이메일 또는 한 글자 닉네임을 입력해주세요.");
-  const {data,error}=await withTimeout(supabaseClient.rpc("tagmark_email_by_nickname",{p_nickname:v}),10000,"닉네임 조회");
-  if(error)throw error;
-  if(!data)throw new Error("등록된 닉네임을 찾을 수 없습니다.");
-  return String(data);
-}
-
-function ensureSupabaseClient(){
-  if(supabaseClient)return supabaseClient;
-  if(!syncConfigured())throw new Error("Supabase 설정이 올바르지 않습니다.");
-  if(!window.supabase || typeof window.supabase.createClient!=="function")throw new Error("Supabase SDK가 아직 로드되지 않았습니다. 잠시 후 다시 눌러주세요.");
-  supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-  supabaseClient.auth.onAuthStateChange((_event,session2)=>{
-    const nextUser=session2?.user||null;
-    syncUser=nextUser;syncHandledUserId=nextUser?.id||null;setSyncButtons();
-    if(syncUser){
-      if(syncBackgroundUserId===syncUser.id)return;
-      syncBackgroundUserId=syncUser.id;
-      setSyncStatus("로그인됨 · 동기화 준비 중…","busy");
-      setTimeout(async()=>{try{await loadSyncNickname();await startRealtime();await initialReconcile()}catch(e){console.error(e);setSyncStatus("Supabase 동기화 실패: "+(e.message||e),"err")}},0);
-    }else{
-      if(syncChannel)supabaseClient.removeChannel(syncChannel);syncChannel=null;syncReady=false;syncInitialized=false;syncNickname="";syncBackgroundUserId=null;setSyncStatus("로그아웃됨","");
-    }
-  });
-  return supabaseClient;
-}
-async function initSupabaseSync(){
-  setSyncButtons();
-  if(!syncConfigured()){setSyncStatus("Supabase 동기화 설정 필요","");return;}
-  try{
-    ensureSupabaseClient();
-    const {data:{session}}=await supabaseClient.auth.getSession();
-    syncUser=session?.user||null;syncHandledUserId=syncUser?.id||null;setSyncButtons();
-    if(syncUser && syncBackgroundUserId!==syncUser.id){
-      syncBackgroundUserId=syncUser.id;setSyncStatus("로그인됨 · 동기화 준비 중…","busy");
-      setTimeout(async()=>{try{await loadSyncNickname();await startRealtime();await initialReconcile()}catch(e){console.error(e);setSyncStatus("Supabase 동기화 실패: "+(e.message||e),"err")}},0);
-    }
-  }catch(e){console.error(e);setSyncStatus("로그인 기능 준비 실패: "+(e.message||e),"err");setSyncButtons()}
-}
-async function submitLogin(){
-  const loginId=$("loginIdInput").value.trim(),password=$("loginPasswordInput").value;
-  if(!loginId||!password)return;
-  setSyncStatus("로그인 중…","busy");
-  try{
-    const email=await resolveLoginEmail(loginId);
-    const {error}=await withTimeout(supabaseClient.auth.signInWithPassword({email,password}),12000,"로그인 요청");
-    if(error)throw error;
-    $("loginModal").classList.remove("open");$("loginPasswordInput").value="";
-    setSyncStatus("로그인 성공 · 동기화 준비 중…","busy");
-  }catch(error){
-    console.error(error);setSyncStatus("로그인 실패: "+(error.message||error),"err");alert("로그인 실패\n\n"+(error.message||error));
-  }
-}
-$("syncLoginBtn").onclick=async()=>{
-  if(!syncConfigured()){alert("Supabase 설정이 올바르지 않습니다.");return}
-  try{ensureSupabaseClient()}catch(e){alert("Supabase 로그인 기능을 준비하지 못했습니다.\n\n"+(e.message||e));return}
-  $("loginIdInput").value="";$("loginPasswordInput").value="";$("loginModal").classList.add("open");setTimeout(()=>$("loginIdInput")?.focus(),0);
-};
-$("loginCancelBtn").onclick=()=>$("loginModal").classList.remove("open");$("loginSubmitBtn").onclick=submitLogin;$("loginPasswordInput").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();submitLogin()}};
-$("syncNicknameBtn").onclick=setSyncNickname;
-$("syncLogoutBtn").onclick=async()=>{await supabaseClient?.auth.signOut()};
-$("syncPushBtn").onclick=async()=>{if(confirm("현재 기기의 Tagmark 전체 데이터를 클라우드에 덮어쓸까요?\n\n클라우드에만 있던 태그/북마크는 삭제되며, 다른 기기도 이 상태로 갱신됩니다."))await pushCloud("manual")};
-$("syncPullBtn").onclick=async()=>pullCloud({force:true});
+window.getCat=id=>getCat(id);Object.defineProperty(window,"activeTopId",{get:()=>activeTopId,set:v=>{activeTopId=v}});
 
 /** URL 정규화 */
 function normalizeUrl(u){
@@ -635,10 +392,10 @@ async function ensureTagIds(tags){const ids=[];for(const t of tags||[]){if(!t)co
 async function encodeBookmark(x){const tags=[...new Set(x.tags||[])],cts=[];const ti=await ensureTagIds(tags);for(const c of x.characters||[]){cts.push({n:c.name||"",r:c.role||"character",g:c.gender||"male",t:await ensureTagIds([...new Set(c.tags||[])])})}return {i:x.id,u:x.url,l:x.title,c:x.categoryId||null,f:x.folderId||null,t:ti,h:cts,n:x.notes||"",m:x.metaType||"",p:x.pages??null,d:x.duration??null,a:x.createdAt||Date.now(),b:x.updatedAt||Date.now()}}
 function decodeBookmark(r){if(r?.i!==undefined)return {id:r.i,url:r.u,title:r.l,categoryId:r.c||null,folderId:r.f||null,tags:(r.t||[]).map(id=>tagIdToName.get(id)).filter(Boolean),characters:(r.h||[]).map(c=>({name:c.n||"",role:c.r||"character",gender:c.g||"male",tags:(c.t||[]).map(id=>tagIdToName.get(id)).filter(Boolean)})),notes:r.n||"",metaType:r.m||"",pages:r.p??null,duration:r.d??null,createdAt:r.a,updatedAt:r.b};return r}
 const rawAll=n=>new Promise((res,rej)=>{if(!db)return rej(new Error("로컬 DB가 초기화되지 않았습니다."));const r=db.transaction(n).objectStore(n).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const rawPut=(n,v,opts={})=>new Promise((res,rej)=>{if(!db)return rej(new Error("로컬 DB가 초기화되지 않았습니다."));const r=db.transaction(n,"readwrite").objectStore(n).put(v);r.onsuccess=()=>{res();if(!opts.skipSync)scheduleCloudPush()};r.onerror=()=>rej(r.error)});
+const rawPut=(n,v,opts={})=>new Promise((res,rej)=>{if(!db)return rej(new Error("로컬 DB가 초기화되지 않았습니다."));const r=db.transaction(n,"readwrite").objectStore(n).put(v);r.onsuccess=()=>{res();};r.onerror=()=>rej(r.error)});
 const all=async n=>n===SB?(await rawAll(n)).map(decodeBookmark):rawAll(n);
 const put=async(n,v,opts={})=>rawPut(n,n===SB?await encodeBookmark(v):v,opts);
-const del=(n,k,opts={})=>new Promise((res,rej)=>{if(!db)return rej(new Error("로컬 DB가 초기화되지 않았습니다."));const r=db.transaction(n,"readwrite").objectStore(n).delete(k);r.onsuccess=()=>{res();if(!opts.skipSync)scheduleCloudPush()};r.onerror=()=>rej(r.error)});
+const del=(n,k,opts={})=>new Promise((res,rej)=>{if(!db)return rej(new Error("로컬 DB가 초기화되지 않았습니다."));const r=db.transaction(n,"readwrite").objectStore(n).delete(k);r.onsuccess=()=>{res();};r.onerror=()=>rej(r.error)});
 
 /* 카테고리 헬퍼 */
 const getCat=id=>categories.find(c=>c.id===id)||null;
@@ -728,27 +485,17 @@ function getFiltered(){
 
 /* 렌더 */
 function render(){renderCrumb();showViews();renderNewTagKindVisibility();if(activeTopId){fillSubFilter();renderResults();renderTagGrid();renderTagVisibilityKinds();renderRegList();renderProfilePage()}else renderManage()}
-/** 카테고리 관리 화면 */ function renderManage(){
-  const box=$("catManageList"), tops=topCats();
-  if(!tops.length){box.innerHTML='<div class="empty">최상위 카테고리를 추가하세요.</div>';return}
-  box.innerHTML=tops.map(c=>{
-    const subs=children(c.id);
-    return '<div class="cat-item"><button class="name" data-enter="'+c.id+'">'+esc(c.name)+'</button>'+
-      '<span class="meta">'+items.filter(x=>x.categoryId&&descIds(c.id).has(x.categoryId)).length+'개</span>'+
-      '<button class="btn sm primary" data-enter="'+c.id+'">열기</button>'+
-      '<button class="btn sm" data-addsub="'+c.id+'">하위＋</button>'+
-      '<button class="btn sm" data-renc="'+c.id+'">✎</button>'+
-      '<button class="btn sm danger" data-delc="'+c.id+'">×</button></div>'+
-      (subs.length?'<div class="cat-sub">'+subs.map(s=>
-        '<div class="cat-sub-item"><span style="flex:1">'+esc(s.name)+'</span>'+
-        '<button class="btn sm" data-addsub="'+s.id+'">＋</button>'+
-        '<button class="btn sm" data-renc="'+s.id+'">✎</button>'+
-        '<button class="btn sm danger" data-delc="'+s.id+'">×</button></div>'+
-        subTree(s.id,1)
-      ).join("")+'</div>':'');
-  }).join("");
-  box.querySelectorAll("[data-enter]").forEach(b=>b.onclick=()=>{activeTopId=b.dataset.enter;wsTab="main";render()});
+/** Main Page: 구형 최상위 카테고리 → 신형 Page */
+let mainPageLayout=localStorage.getItem("tagmark-main-page-layout")||"grid";
+let mainPageSort=localStorage.getItem("tagmark-main-page-sort")||"asc";
+function renderManage(){
+  const box=$("catManageList"), tops=topCats(); if(!box)return;
+  box.className=mainPageLayout==="list"?"page-grid page-list":"page-grid";
+  const arr=[...tops].sort((a,b)=>{const n=a.name.localeCompare(b.name,"ko");return mainPageSort==="desc"?-n:n});
+  box.innerHTML=arr.length?arr.map(c=>{const count=items.filter(x=>x.categoryId&&descIds(c.id).has(x.categoryId)).length;const subs=children(c.id).length;return `<article class="page-card"><button class="page-card-open" data-enter="${esc(c.id)}"><span class="page-card-icon">▣</span><span class="page-card-main"><strong>${esc(c.name)}</strong><small>${count}개 북마크 · 하위 카테고리 ${subs}개</small></span><span class="page-card-arrow">›</span></button><div class="page-card-actions"><button class="btn sm" data-addsub="${esc(c.id)}">하위＋</button><button class="btn sm" data-renc="${esc(c.id)}">✎</button><button class="btn sm danger" data-delc="${esc(c.id)}">×</button></div></article>`}).join(""):'<div class="empty page-empty">Page가 없습니다. 오른쪽 위의 ＋ Page로 시작하세요.</div>';
+  box.querySelectorAll('[data-enter]').forEach(b=>b.onclick=()=>{activeTopId=b.dataset.enter;wsTab='main';tagStates={include:[],exclude:[]};render()});
   bindCatCrud(box);
+  $("mainGridBtn")?.classList.toggle('primary',mainPageLayout==='grid');$("mainListBtn")?.classList.toggle('primary',mainPageLayout==='list');if($("mainSortBtn"))$("mainSortBtn").textContent=mainPageSort==='asc'?'A→Z':'Z→A';
 }
 function subTree(id,depth){
   const ch=children(id);if(!ch.length)return"";
@@ -1535,89 +1282,29 @@ $("subCatFilter").onchange=render;
 function fitMainView(){const v=$("view-main");if(!v||v.classList.contains("hidden"))return;const top=v.getBoundingClientRect().top;const h=Math.max(window.innerWidth<=760?0:420,window.innerHeight-top-8);v.style.height=h+"px"}
 window.addEventListener("resize",fitMainView);
 setTimeout(fitMainView,0);
-setSyncStatus("Supabase 초기화 중…","busy");
-// Supabase 인증과 로컬 IndexedDB는 서로 독립적으로 초기화한다.
-initSupabaseSync();
 openDB().then(async()=>{await refresh()}).catch(e=>{
   console.error("Local IndexedDB init failed",e);
   window.localDBReady=false;
-  setSyncStatus("로컬 DB를 사용할 수 없습니다. Supabase 로그인은 계속 사용할 수 있습니다.","err");
 });
 </script>
 
-<!-- v1.4: 구형 기능 보존 + Page별 기능 모듈 ON/OFF -->
-<div class="modal" id="pageModuleModal">
-  <div class="dialog module-dialog">
-    <h2>페이지 기능 설정</h2>
-    <div class="hint" id="pageModuleHint">현재 페이지의 기능을 끄거나 켤 수 있습니다. 기능을 꺼도 기존 데이터는 삭제되지 않습니다.</div>
-    <div class="module-grid">
-      <label class="module-row"><span><b>북마크</b><small>메인 목록·북마크 추가/수정</small></span><input type="checkbox" id="modBookmark"></label>
-      <label class="module-row"><span><b>태그</b><small>태그 필터·태그 관리·사전등록 태그</small></span><input type="checkbox" id="modTags"></label>
-      <label class="module-row"><span><b>프로필</b><small>프로필 페이지·프로필 등록/수정</small></span><input type="checkbox" id="modProfiles"></label>
-      <label class="module-row"><span><b>카테고리</b><small>하위 카테고리 필터·북마크 카테고리 지정</small></span><input type="checkbox" id="modCategories"></label>
-      <label class="module-row"><span><b>등장인물</b><small>Character/Cast 데이터 및 입력 UI</small></span><input type="checkbox" id="modCharacters"></label>
-      <label class="module-row"><span><b>프로필↔등장인물 연결</b><small>프로필의 Character/Cast 연동</small></span><input type="checkbox" id="modProfileCharacterLink"></label>
-      <label class="module-row"><span><b>클라우드 동기화</b><small>Supabase 로그인·업로드·다운로드</small></span><input type="checkbox" id="modSync"></label>
-    </div>
-    <div class="module-note">이 v1.4에서는 구형의 실제 화면과 동작을 기본값으로 유지하고, 위 기능만 Page 단위로 숨김/표시할 수 있게 확장했습니다.</div>
-    <div class="modal-actions"><button class="btn" id="pageModuleCancel">닫기</button><button class="btn primary" id="pageModuleApply">적용</button></div>
-  </div>
-</div>
+
+<div class="modal" id="pageModuleModal"><div class="dialog module-dialog"><h2>페이지 기능 설정</h2><div class="hint" id="pageModuleHint"></div><div class="module-grid">
+<label class="module-row"><span><b>북마크</b><small>목록·추가·수정·일괄작업</small></span><input type="checkbox" id="modBookmark"></label>
+<label class="module-row"><span><b>태그</b><small>필터·태그 관리·사전등록 태그</small></span><input type="checkbox" id="modTags"></label>
+<label class="module-row"><span><b>프로필</b><small>Character/Cast 프로필</small></span><input type="checkbox" id="modProfiles"></label>
+<label class="module-row"><span><b>카테고리</b><small>하위 카테고리·분류</small></span><input type="checkbox" id="modCategories"></label>
+<label class="module-row"><span><b>등장인물</b><small>Character/Cast 입력</small></span><input type="checkbox" id="modCharacters"></label>
+<label class="module-row"><span><b>프로필↔등장인물 연결</b><small>프로필과 등장인물 연동</small></span><input type="checkbox" id="modProfileCharacterLink"></label></div><div class="module-note">기능을 꺼도 데이터는 삭제하지 않습니다.</div><div class="modal-actions"><button class="btn" id="pageModuleCancel">닫기</button><button class="btn primary" id="pageModuleApply">적용</button></div></div></div>
 <script>
-(function(){
-  const KEY='tagmark-page-modules-v1';
-  const defaults={bookmark:true,tags:true,profiles:true,categories:true,characters:true,profileCharacterLink:true,sync:true};
-  function readAll(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
-  function getModules(){const all=readAll(), v=all[activeTopId]||{};return {...defaults,...v}}
-  function saveModules(v){if(!activeTopId)return;const all=readAll();all[activeTopId]={...defaults,...v};localStorage.setItem(KEY,JSON.stringify(all));}
-  function set(id,v){const el=document.getElementById(id);if(el)el.checked=!!v}
-  function get(id){return !!document.getElementById(id)?.checked}
-  function openModules(){
-    if(!activeTopId){alert('먼저 페이지를 선택하세요.');return}
-    const m=getModules();set('modBookmark',m.bookmark);set('modTags',m.tags);set('modProfiles',m.profiles);set('modCategories',m.categories);set('modCharacters',m.characters);set('modProfileCharacterLink',m.profileCharacterLink);set('modSync',m.sync);
-    const c=getCat?.(activeTopId); const h=document.getElementById('pageModuleHint'); if(h)h.textContent='현재 페이지: '+(c?.name||'')+' · 기능을 꺼도 기존 데이터는 삭제되지 않습니다.';
-    document.getElementById('pageModuleModal')?.classList.add('open');
-  }
-  function apply(){
-    if(!activeTopId)return;
-    const m={bookmark:get('modBookmark'),tags:get('modTags'),profiles:get('modProfiles'),categories:get('modCategories'),characters:get('modCharacters'),profileCharacterLink:get('modProfileCharacterLink'),sync:get('modSync')};
-    saveModules(m);document.getElementById('pageModuleModal')?.classList.remove('open');
-    render?.();
-  }
-  function hide(el,on){if(el)el.classList.toggle('hidden',!!on)}
-  function applyUI(){
-    if(!activeTopId)return;
-    const m=getModules();
-    const mainTab=document.querySelector('[data-ws="main"]'), tagTab=document.querySelector('[data-ws="tags"]'), profTab=document.querySelector('[data-ws="profiles"]');
-    hide(mainTab,!m.bookmark); hide(document.getElementById('ws-main'),!m.bookmark);
-    hide(tagTab,!m.tags); hide(document.getElementById('ws-tags'),!m.tags);
-    hide(profTab,!m.profiles); hide(document.getElementById('ws-profiles'),!m.profiles);
-    hide(document.getElementById('addBtn'),!m.bookmark);
-    hide(document.getElementById('subCatFilter'),!m.categories);
-    hide(document.getElementById('sortDirBtn'),!m.bookmark);
-    hide(document.getElementById('charField'),!m.characters || !m.profileCharacterLink);
-    hide(document.getElementById('syncBox'),!m.sync);
-    document.querySelectorAll('#catPickerInput,#selectedCat').forEach(el=>hide(el,!m.categories));
-    const meta=m.bookmark;
-    hide(document.getElementById('editModal')?.querySelector('#charField'),!m.characters || !m.profileCharacterLink);
-    if(wsTab==='main'&&!m.bookmark) wsTab=m.tags?'tags':m.profiles?'profiles':'main';
-    if(wsTab==='tags'&&!m.tags) wsTab=m.bookmark?'main':m.profiles?'profiles':'main';
-    if(wsTab==='profiles'&&!m.profiles) wsTab=m.bookmark?'main':m.tags?'tags':'main';
-  }
-  window.getPageModules=getModules;
-  window.savePageModules=saveModules;
-  window.applyPageModules=applyUI;
-  document.getElementById('pageModuleBtn')?.addEventListener('click',openModules);
-  document.getElementById('pageModuleCancel')?.addEventListener('click',()=>document.getElementById('pageModuleModal')?.classList.remove('open'));
-  document.getElementById('pageModuleApply')?.addEventListener('click',apply);
-  document.getElementById('pageModuleModal')?.addEventListener('click',e=>{if(e.target.id==='pageModuleModal')e.currentTarget.classList.remove('open')});
-  const oldRender=render;
-  render=function(){oldRender();setTimeout(applyUI,0)};
-  setTimeout(applyUI,0);
-})();
+(function(){const KEY='tagmark-page-modules-v2',D={bookmark:true,tags:true,profiles:true,categories:true,characters:true,profileCharacterLink:true};const q=id=>document.getElementById(id);const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}};const mods=()=>({...D,...(read()[window.activeTopId]||{})});
+function open(){if(!window.activeTopId)return alert('먼저 Page를 선택하세요.');const m=mods();Object.keys(D).forEach(k=>{const e=q('mod'+k[0].toUpperCase()+k.slice(1));if(e)e.checked=!!m[k]});q('pageModuleHint').textContent='현재 Page: '+(window.getCat?.(window.activeTopId)?.name||'');q('pageModuleModal').classList.add('open')}
+function apply(){const m={};Object.keys(D).forEach(k=>m[k]=!!q('mod'+k[0].toUpperCase()+k.slice(1))?.checked);const a=read();a[window.activeTopId]={...D,...m};localStorage.setItem(KEY,JSON.stringify(a));q('pageModuleModal').classList.remove('open');window.render?.()}
+function ui(){if(!window.activeTopId)return;const m=mods(),hide=(e,v)=>e?.classList.toggle('hidden',!!v);hide(document.querySelector('[data-ws="main"]'),!m.bookmark);hide(document.querySelector('[data-ws="tags"]'),!m.tags);hide(document.querySelector('[data-ws="profiles"]'),!m.profiles);hide(q('addBtn'),!m.bookmark);hide(q('subCatFilter'),!m.categories);hide(q('sortDirBtn'),!m.bookmark);hide(q('charField'),!m.characters||!m.profileCharacterLink);hide(q('catPickerInput'),!m.categories);hide(q('selectedCat'),!m.categories);if(wsTab==='main'&&!m.bookmark)wsTab=m.tags?'tags':m.profiles?'profiles':'main';if(wsTab==='tags'&&!m.tags)wsTab=m.bookmark?'main':m.profiles?'profiles':'main';if(wsTab==='profiles'&&!m.profiles)wsTab=m.bookmark?'main':m.tags?'tags':'main'}
+window.getPageModules=mods;window.applyPageModules=ui;document.addEventListener('DOMContentLoaded',()=>{q('pageModuleBtn')?.addEventListener('click',open);q('pageModuleCancel')?.addEventListener('click',()=>q('pageModuleModal').classList.remove('open'));q('pageModuleApply')?.addEventListener('click',apply);q('mainGridBtn')?.addEventListener('click',()=>{mainPageLayout='grid';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainListBtn')?.addEventListener('click',()=>{mainPageLayout='list';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainSortBtn')?.addEventListener('click',()=>{mainPageSort=mainPageSort==='asc'?'desc':'asc';localStorage.setItem('tagmark-main-page-sort',mainPageSort);render()});q('addTopPageBtn')?.addEventListener('click',async()=>{const n=prompt('Page 이름을 입력하세요');if(n?.trim())await addCat(n.trim())});q('addTabBtn')?.addEventListener('click',()=>alert('현재는 구형 기능을 신형 Tab 구조로 옮긴 메인 / 태그 관리 / 프로필 Tab을 제공합니다.'));});const wait=setInterval(()=>{if(typeof window.render==='function'){clearInterval(wait);const r=window.render;window.render=function(){r();setTimeout(ui,0)}}},20)})();
 </script>
 <style>
-.module-dialog{max-width:680px}.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.module-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfe;cursor:pointer}.module-row span{display:flex;flex-direction:column;gap:3px}.module-row small{color:var(--muted);font-size:11px;line-height:1.35}.module-row input{width:18px;height:18px;flex:none}.module-note{margin-top:14px;padding:10px 12px;border-radius:10px;background:#f5f7fb;color:var(--muted);font-size:11px;line-height:1.5}@media(max-width:650px){.module-grid{grid-template-columns:1fr}}
+.main-page-panel{display:flex;flex-direction:column;min-height:calc(100vh - 145px);overflow:hidden}.main-page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}.main-page-head .cat-title{margin:0 0 5px;padding:0;border:0}.main-page-tools{display:flex;gap:6px;flex-wrap:wrap}.main-page-scroll{flex:1;min-height:0;overflow:auto;padding:14px}.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-content:start}.page-list{display:flex;flex-direction:column;gap:8px}.page-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;box-shadow:0 2px 8px #00000008}.page-card-open{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border:0;background:transparent;text-align:left;color:inherit}.page-card-open:hover{background:#f8fafc}.page-card-icon{width:38px;height:38px;border-radius:10px;background:var(--chip);display:grid;place-items:center;color:var(--accent);font-weight:800;flex:0 0 auto}.page-card-main{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.page-card-main strong{font-size:16px;overflow-wrap:anywhere}.page-card-main small{font-size:11px;color:var(--muted)}.page-card-arrow{font-size:25px;color:var(--muted)}.page-card-actions{display:flex;gap:5px;padding:0 12px 12px;justify-content:flex-end}.page-list .page-card-open{padding:11px 14px}.page-list .page-card-actions{padding:0 10px 10px}.page-head-row{display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line);padding:0 10px}.page-head-row .tabs{border-bottom:0;flex:1}.tab-add{font-size:18px;min-width:38px}.module-dialog{max-width:680px}.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.module-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfe;cursor:pointer}.module-row span{display:flex;flex-direction:column;gap:3px}.module-row small{color:var(--muted);font-size:11px}.module-row input{width:18px;height:18px;flex:none}.module-note{margin-top:14px;padding:10px 12px;border-radius:10px;background:#f5f7fb;color:var(--muted);font-size:11px}.sync-box{display:none!important}@media(max-width:650px){.module-grid{grid-template-columns:1fr}.main-page-head{padding:12px}.main-page-scroll{padding:9px}.page-grid{grid-template-columns:1fr}}
 </style>
 </body>
 </html>
