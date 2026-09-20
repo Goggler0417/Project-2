@@ -1,26 +1,52 @@
-# Bookmark DB Editor v1
+# Bookmark Database Editor v1.2
 
-현재 요청한 1~6번 구조를 구현한 독립 실행형 프로토타입입니다.
+- **Version:** v1.2
+- **Main file:** `index.html`
+- **Folder:** `v1.2`
+- **Run:** open `index.html` in a modern browser.
+- **Storage:** browser `localStorage`.
 
-구현:
-- Main Page
-- Main 직속 Site / Category Page
-- 페이지마다 독립된 데이터 공간
-- 페이지별 독립 Data Schema
-- 페이지별 Record / Category / Tag / Profile 저장 공간
-- 페이지별 UI 진입점
-- 페이지별 서로 다른 필드 구조
-- 텍스트/URL/날짜/숫자/태그/프로필/카테고리 등 필드 타입
-- 페이지 생성/삭제/수정
-- Schema 필드 추가/삭제
-- Record CRUD
-- 페이지별 검색
-- JSON Export
-- localStorage 기반 로컬 저장
+## v1.2 changes
 
-아직 의도적으로 넣지 않은 것:
-- 자동 수집/추출기
-- 사이트별 실제 extractor
-- Cloud DB / 로그인 / 동기화
-- Cross-page relation의 실제 연결 로직
-- 고급 UI schema editor
+### Main Page → Page → Tab
+Each Page can contain multiple Tabs. Each Tab has its own independent:
+- Schema
+- Records
+- Categories
+- Tags
+- Profiles
+- Search/sort settings
+- Layout settings
+
+### Tab customization
+Tab settings support:
+- name / icon / description
+- Grid or List layout
+- title Field
+- search on/off
+- independent Schema
+- Field add/delete/rename/type change
+
+### Popup editing
+Page, Tab, Schema and Record editing are handled through Popups.
+
+### Hyperlinks
+URL fields are rendered as clickable links and open in a new browser tab.
+
+### Field types
+`text`, `long_text`, `url`, `number`, `boolean`, `date`, `datetime`, `image`, `file`, `color`, `rating`, `tag`, `tag[]`, `category`, `category[]`, `profile`, `profile[]`, `relation`, `relation[]`, `enum`, `duration`, `markdown`, `json`.
+
+### Planned extensions
+- title itself linking to a URL Field (`titleLinkField`)
+- richer Table layout
+- actual image/file storage
+- relation UI
+- dedicated Tag/Category/Profile management Tabs
+- per-Tab custom actions and detail layouts
+- cross-Page relations
+- cloud upload/download sync
+- site-specific extractors
+
+The old DB is intentionally not converted automatically. The planned data flow remains:
+
+RAW HYPERLINKS → SITE-SPECIFIC EXTRACTOR → PAGE/TAB SCHEMA → BOOKMARK DATABASE

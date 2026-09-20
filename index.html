@@ -2,136 +2,103 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Bookmark DB Editor</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bookmark Database Editor v1.2</title>
 <style>
-:root{--bg:#f6f7f9;--panel:#fff;--line:#e2e5e9;--text:#17191c;--muted:#737981;--accent:#2563eb;--danger:#dc2626;--radius:12px}
+:root{--bg:#f5f7fb;--panel:#fff;--line:#dfe4ec;--text:#18202b;--muted:#6d7785;--accent:#315efb;--danger:#d64545}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-button,input,textarea,select{font:inherit}button{cursor:pointer}
-.app{height:100vh;display:flex;flex-direction:column}.top{height:58px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:12px}
-.logo{font-weight:700}.top .spacer{flex:1}.top input{width:min(360px,40vw);padding:9px 12px;border:1px solid var(--line);border-radius:9px}
-.body{flex:1;min-height:0;display:flex}.sidebar{width:245px;background:var(--panel);border-right:1px solid var(--line);padding:14px;overflow:auto}.content{flex:1;min-width:0;overflow:auto;padding:22px}
-.section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 8px 7px}
-.nav{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;padding:9px 10px;border-radius:8px;text-align:left}.nav:hover,.nav.active{background:#eef3ff}.nav .count{margin-left:auto;color:var(--muted);font-size:12px}
-.btn{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:8px}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.danger{color:var(--danger)}
-h1{margin:0 0 6px;font-size:25px}h2{margin:0 0 12px;font-size:19px}.sub{color:var(--muted);font-size:14px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:22px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;min-height:145px}.card h3{margin:0 0 6px}.card p{color:var(--muted);font-size:13px;line-height:1.45}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{background:#eef1f5;border-radius:999px;padding:4px 8px;font-size:12px}
-.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:18px 0}.toolbar .spacer{flex:1}.record-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}.record{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}.record .url{font-size:12px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.record-actions{display:flex;gap:6px;margin-top:12px}
-.empty{padding:50px 20px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
-.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:18px;z-index:10}.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;padding:20px}.modal-head{display:flex;align-items:center;margin-bottom:16px}.modal-head .spacer{flex:1}.form{display:grid;gap:13px}.field{display:grid;gap:6px}.field label{font-size:13px;font-weight:600}.field input,.field textarea,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}.field textarea{min-height:90px;resize:vertical}.schema-row{display:grid;grid-template-columns:1fr 140px 36px;gap:8px;align-items:center}.schema-row input,.schema-row select{padding:8px;border:1px solid var(--line);border-radius:8px}.footer-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
-@media(max-width:760px){.sidebar{width:190px}.content{padding:16px}.top input{width:180px}}
-@media(max-width:560px){.sidebar{display:none}.top input{width:140px}.content{padding:12px}}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px}button:hover{background:#f1f4f9}
+.app{display:flex;height:100vh;overflow:hidden}.sidebar{width:250px;background:#111827;color:#fff;padding:18px;display:flex;flex-direction:column;gap:12px}.brand{font-weight:800;font-size:18px}.version{font-size:11px;color:#9ca3af;margin-top:-8px}.side-actions{display:flex;gap:7px}.side-actions button{flex:1}.page-list{overflow:auto;display:flex;flex-direction:column;gap:5px}.page-item{padding:10px;border-radius:8px;cursor:pointer;color:#d1d5db}.page-item.active{background:#26344d;color:#fff}.main{flex:1;display:flex;flex-direction:column;min-width:0}.topbar{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:12px 18px}.topbar input{flex:1;max-width:520px;padding:10px 12px;border:1px solid var(--line);border-radius:9px}.content{padding:20px;overflow:auto}.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.head h1{margin:0 0 4px}.muted{color:var(--muted);font-size:13px}.actions{display:flex;gap:7px;flex-wrap:wrap}.tabs{display:flex;gap:5px;border-bottom:1px solid var(--line);margin:18px 0;padding-bottom:0;overflow:auto}.tab{border:0;border-radius:8px 8px 0 0;background:transparent;padding:11px 14px;color:var(--muted);white-space:nowrap}.tab.active{color:var(--accent);background:#fff;border:1px solid var(--line);border-bottom-color:#fff;margin-bottom:-1px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.toolbar input,.toolbar select{padding:9px;border:1px solid var(--line);border-radius:8px}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.cards.list{display:flex;flex-direction:column}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}.card h3{margin:0 34px 8px 0;font-size:16px}.card .field{margin-top:8px}.field-name{font-size:11px;color:var(--muted);margin-bottom:2px}.card-actions{position:absolute;right:10px;top:10px;display:flex;gap:4px}.card-actions button{padding:4px 7px}.empty{padding:45px;text-align:center;background:#fff;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+.modal-back{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}.modal{width:min(720px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 20px 60px #0004}.modal h2{margin-top:0}.form{display:grid;gap:11px}.form label{font-size:13px;font-weight:600}.form input,.form textarea,.form select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px}.form textarea{min-height:100px;resize:vertical}.modal-footer{display:flex;justify-content:flex-end;gap:7px;margin-top:16px}.danger{color:var(--danger)}.schema-row{display:grid;grid-template-columns:1.3fr 1fr auto;gap:7px;align-items:center}.check{display:flex;align-items:center;gap:7px}.notice{padding:10px 12px;border-radius:8px;background:#eef3ff;color:#2949a6;font-size:13px}.link{color:var(--accent);text-decoration:none}.link:hover{text-decoration:underline}.pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#eef1f6;font-size:12px;margin:2px}
+@media(max-width:700px){.sidebar{width:190px}.content{padding:14px}.head{flex-direction:column}.cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id="app" class="app"></div>
+<div id="app"></div>
 <script>
-const KEY="bookmark-editor-v1";
-const TYPES=["text","long_text","url","number","boolean","date","datetime","image","file","color","rating","tag","tag[]","category","category[]","profile","profile[]","relation","relation[]","enum","duration","markdown","json"];
-
-const seed={
-  version:1,
-  pages:[
-    {id:"pixiv",name:"Pixiv",icon:"🎨",description:"Illustration / artist database",schema:[
-      {id:"title",name:"Title",type:"text"},{id:"url",name:"URL",type:"url"},
-      {id:"artist",name:"Artist",type:"profile"},{id:"series",name:"Series",type:"category"},
-      {id:"tags",name:"Tags",type:"tag[]"},{id:"rating",name:"Rating",type:"rating"}
-    ],records:[],categories:[],tags:[],profiles:[]},
-    {id:"youtube",name:"YouTube",icon:"▶️",description:"Video / channel database",schema:[
-      {id:"title",name:"Title",type:"text"},{id:"url",name:"URL",type:"url"},
-      {id:"channel",name:"Channel",type:"profile"},{id:"playlist",name:"Playlist",type:"category"},
-      {id:"duration",name:"Duration",type:"duration"},{id:"uploadDate",name:"Upload Date",type:"date"}
-    ],records:[],categories:[],tags:[],profiles:[]},
-    {id:"manga",name:"Manga",icon:"📚",description:"Independent manga database",schema:[
-      {id:"title",name:"Title",type:"text"},{id:"url",name:"URL",type:"url"},
-      {id:"author",name:"Author",type:"profile"},{id:"genres",name:"Genres",type:"tag[]"}
-    ],records:[],categories:[],tags:[],profiles:[]}
-  ]
-};
-let db=load(), current=null, query="";
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||seed}catch(e){return seed}}
+const VERSION="v1.2", KEY="bookmark-editor-v1.2";
+const TYPES=[
+["text","짧은 텍스트"],["long_text","긴 텍스트"],["url","URL"],["number","숫자"],["boolean","참/거짓"],
+["date","날짜"],["datetime","날짜+시간"],["image","이미지"],["file","파일"],["color","색상"],["rating","평점"],
+["tag","태그 1개"],["tag[]","태그 여러 개"],["category","카테고리 1개"],["category[]","카테고리 여러 개"],
+["profile","프로필 1개"],["profile[]","프로필 여러 개"],["relation","다른 Record 관계"],["relation[]","여러 관계"],
+["enum","선택지"],["duration","기간"],["markdown","Markdown"],["json","JSON"]];
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function newTab(name){return{id:uid(),name,icon:"📄",description:"",layout:"grid",titleField:"",visibleFields:[],search:true,sortField:"",schema:[{id:uid(),name:"title",type:"text"}],records:[],categories:[],tags:[],profiles:[]}}
+function defaults(){let p=(name,icon,desc,tab)=>({id:uid(),name,icon,description:desc,tabs:[tab]});
+return{version:2,pages:[
+p("Pixiv","🎨","Pixiv data",Object.assign(newTab("Artwork"),{icon:"🖼️",titleField:""})),
+p("YouTube","▶️","YouTube data",Object.assign(newTab("Videos"),{icon:"🎬"})),
+p("Manga","📚","Manga data",Object.assign(newTab("Works"),{icon:"📖"}))
+]}}
+let db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){return defaults()}})();
+let pageId=db.pages[0]?.id||null,tabId=db.pages[0]?.tabs[0]?.id||null,query="";
 function save(){localStorage.setItem(KEY,JSON.stringify(db))}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function render(){
-  document.getElementById("app").innerHTML=`
-  <header class="top"><div class="logo">🔖 Bookmark DB</div><input id="search" placeholder="Search current page…" value="${esc(query)}"><div class="spacer"></div><button class="btn" onclick="exportDB()">Export JSON</button><button class="btn primary" onclick="newPage()">+ Page</button></header>
-  <div class="body"><aside class="sidebar">
-    <div class="section-title">Main</div><button class="nav ${current===null?'active':''}" onclick="selectPage(null)">🏠 Main Page</button>
-    <div class="section-title">Pages</div>
-    ${db.pages.map(p=>`<button class="nav ${current===p.id?'active':''}" onclick="selectPage('${p.id}')">${esc(p.icon||"📁")} ${esc(p.name)} <span class="count">${p.records.length}</span></button>`).join("")}
-  </aside><main class="content" id="content"></main></div>`;
-  document.getElementById("search").oninput=e=>{query=e.target.value;renderContent()};
-  renderContent();
-}
-function renderContent(){
- const c=document.getElementById("content"); if(!c)return;
- if(current===null){c.innerHTML=`<h1>Main Page</h1><div class="sub">Each top-level page owns an independent schema and data space.</div>
- <div class="toolbar"><div class="spacer"></div><button class="btn primary" onclick="newPage()">Create Site / Category Page</button></div>
- <div class="cards">${db.pages.map(p=>`<div class="card"><h3>${esc(p.icon||"📁")} ${esc(p.name)}</h3><p>${esc(p.description||"")}</p><div class="chips"><span class="chip">${p.records.length} records</span><span class="chip">${p.schema.length} fields</span></div><div class="record-actions"><button class="btn" onclick="selectPage('${p.id}')">Open</button><button class="btn" onclick="editPage('${p.id}')">Configure</button></div></div>`).join("")||'<div class="empty">No pages yet.</div>'}</div>`;return}
- const p=db.pages.find(x=>x.id===current); if(!p){current=null;return renderContent()}
- const records=p.records.filter(r=>JSON.stringify(r).toLowerCase().includes(query.toLowerCase()));
- c.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div><h1>${esc(p.icon||"📁")} ${esc(p.name)}</h1><div class="sub">${esc(p.description||"Independent database space")}</div></div><div class="spacer"></div><button class="btn" onclick="editPage('${p.id}')">Page Schema / UI</button></div>
- <div class="toolbar"><button class="btn primary" onclick="newRecord('${p.id}')">+ Record</button><button class="btn" onclick="manageList('${p.id}','categories')">Categories (${p.categories.length})</button><button class="btn" onclick="manageList('${p.id}','tags')">Tags (${p.tags.length})</button><button class="btn" onclick="manageList('${p.id}','profiles')">Profiles (${p.profiles.length})</button><div class="spacer"></div><span class="sub">${records.length} / ${p.records.length} records</span></div>
- <div class="record-grid">${records.map(r=>recordHTML(p,r)).join("")||'<div class="empty">No records match the current search.</div>'}</div>`;
-}
-function recordHTML(p,r){
- const titleField=p.schema.find(f=>f.id==="title")||p.schema[0]; const title=titleField?(r[titleField.id]||"Untitled"):"Untitled";
- const fields=p.schema.filter(f=>f.id!==(titleField&&titleField.id)).slice(0,5);
- return `<article class="record"><h3>${esc(title)}</h3>${fields.map(f=>`<div style="margin-top:7px"><b style="font-size:12px">${esc(f.name)}</b><div class="sub">${esc(Array.isArray(r[f.id])?r[f.id].join(", "):r[f.id]??"")}</div></div>`).join("")}<div class="record-actions"><button class="btn" onclick="editRecord('${p.id}','${r.id}')">Edit</button><button class="btn danger" onclick="deleteRecord('${p.id}','${r.id}')">Delete</button></div></article>`;
-}
-function selectPage(id){current=id;query="";render()}
-function newPage(){openPageModal()}
-function editPage(id){openPageModal(db.pages.find(p=>p.id===id))}
-function openPageModal(p){
- const editing=!!p;
- modal(`<div class="modal-head"><h2>${editing?"Configure Page":"New Site / Category Page"}</h2><div class="spacer"></div><button class="btn" onclick="closeModal()">×</button></div>
- <div class="form"><div class="field"><label>Name</label><input id="pname" value="${esc(p?.name||"")}"></div>
- <div class="field"><label>Icon</label><input id="picon" value="${esc(p?.icon||"📁")}"></div>
- <div class="field"><label>Description</label><textarea id="pdesc">${esc(p?.description||"")}</textarea></div>
- <h3>Data Schema</h3><div id="schemaRows">${(p?.schema||[]).map(schemaRow).join("")}</div>
- <button class="btn" onclick="addSchemaRow()">+ Add field</button>
- <div class="footer-actions"><button class="btn" onclick="closeModal()">Cancel</button>${editing?`<button class="btn danger" onclick="deletePage('${p.id}')">Delete Page</button>`:""}<button class="btn primary" onclick="savePage('${p?.id||""}')">Save</button></div></div>`);
-}
-function schemaRow(f={id:"",name:"",type:"text"}){return `<div class="schema-row"><input class="sname" placeholder="Field name" value="${esc(f.name)}"><select class="stype">${TYPES.map(t=>`<option ${t===f.type?"selected":""}>${t}</option>`).join("")}</select><button class="btn danger" onclick="this.parentElement.remove()">×</button></div>`}
-function addSchemaRow(){document.getElementById("schemaRows").insertAdjacentHTML("beforeend",schemaRow())}
-function savePage(id){
- const rows=[...document.querySelectorAll(".schema-row")];
- const schema=rows.map((row,i)=>({id:(row.querySelector(".sname").value.trim()||"field_"+i).toLowerCase().replace(/[^a-z0-9_가-힣-]/g,"_"),name:row.querySelector(".sname").value.trim()||"Field "+(i+1),type:row.querySelector(".stype").value}));
- if(!schema.length)return alert("Add at least one field.");
- if(id){const p=db.pages.find(x=>x.id===id);p.name=document.getElementById("pname").value.trim()||p.name;p.icon=document.getElementById("picon").value;p.description=document.getElementById("pdesc").value;p.schema=schema}
- else {const p={id:"page_"+Date.now(),name:document.getElementById("pname").value.trim()||"New Page",icon:document.getElementById("picon").value,description:document.getElementById("pdesc").value,schema,records:[],categories:[],tags:[],profiles:[]};db.pages.push(p);current=p.id}
- save();closeModal();render()
-}
-function deletePage(id){if(confirm("Delete this entire independent page and all of its records?")){db.pages=db.pages.filter(p=>p.id!==id);current=null;save();closeModal();render()}}
-function newRecord(pid){const p=db.pages.find(x=>x.id===pid);openRecordModal(p)}
-function editRecord(pid,rid){const p=db.pages.find(x=>x.id===pid),r=p.records.find(x=>x.id===rid);openRecordModal(p,r)}
-function openRecordModal(p,r){
- const editing=!!r;
- modal(`<div class="modal-head"><h2>${editing?"Edit Record":"New Record"}</h2><div class="spacer"></div><button class="btn" onclick="closeModal()">×</button></div><div class="form">${p.schema.map(f=>`<div class="field"><label>${esc(f.name)} <span class="sub">(${f.type})</span></label>${inputFor(f,r?.[f.id])}</div>`).join("")}<div class="footer-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveRecord('${p.id}','${r?.id||""}')">Save</button></div></div>`);
-}
-function inputFor(f,v){
- v=Array.isArray(v)?v.join(", "):v??"";
- if(f.type==="long_text"||f.type==="markdown"||f.type==="json")return `<textarea data-field="${esc(f.id)}">${esc(v)}</textarea>`;
- if(f.type==="boolean")return `<select data-field="${esc(f.id)}"><option value="">—</option><option ${v===true||v==="true"?"selected":""} value="true">true</option><option ${v===false||v==="false"?"selected":""} value="false">false</option></select>`;
- if(["number","rating"].includes(f.type))return `<input type="number" data-field="${esc(f.id)}" value="${esc(v)}">`;
- if(f.type==="date")return `<input type="date" data-field="${esc(f.id)}" value="${esc(v)}">`;
- if(f.type==="datetime")return `<input type="datetime-local" data-field="${esc(f.id)}" value="${esc(v)}">`;
- if(f.type.endsWith("[]")||["tag","category","profile","relation"].includes(f.type))return `<input data-field="${esc(f.id)}" value="${esc(v)}" placeholder="comma-separated values">`;
- return `<input data-field="${esc(f.id)}" value="${esc(v)}">`;
-}
-function saveRecord(pid,rid){
- const p=db.pages.find(x=>x.id===pid),data={};document.querySelectorAll("[data-field]").forEach(el=>{let v=el.value;if(p.schema.find(f=>f.id===el.dataset.field)?.type==="number"||p.schema.find(f=>f.id===el.dataset.field)?.type==="rating")v=v===""?"":Number(v);else if(p.schema.find(f=>f.id===el.dataset.field)?.type==="boolean")v=v===""?"":v==="true";else if(p.schema.find(f=>f.id===el.dataset.field)?.type.endsWith("[]"))v=v.split(",").map(x=>x.trim()).filter(Boolean);data[el.dataset.field]=v});
- if(rid)Object.assign(p.records.find(r=>r.id===rid),data);else p.records.push({id:"rec_"+Date.now(),...data});
- save();closeModal();renderContent()
-}
-function deleteRecord(pid,rid){if(confirm("Delete this record?")){const p=db.pages.find(x=>x.id===pid);p.records=p.records.filter(r=>r.id!==rid);save();renderContent()}}
-function manageList(pid,key){const p=db.pages.find(x=>x.id===pid);const label=key[0].toUpperCase()+key.slice(1);modal(`<div class="modal-head"><h2>${label}</h2><div class="spacer"></div><button class="btn" onclick="closeModal()">×</button></div><div class="form"><input id="listNew" placeholder="Add ${key.slice(0,-1)}"><button class="btn primary" onclick="addList('${pid}','${key}')">Add</button><div>${p[key].map((x,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(x.name||x)}</span><div class="spacer"></div><button class="btn danger" onclick="removeList('${pid}','${key}',${i})">×</button></div>`).join("")||'<div class="sub">Empty</div>'}</div></div>`)}
-function addList(pid,key){const p=db.pages.find(x=>x.id===pid),v=document.getElementById("listNew").value.trim();if(v){p[key].push(key==="profiles"?{id:"p_"+Date.now(),name:v}:v);save();manageList(pid,key);renderContent()}}
-function removeList(pid,key,i){const p=db.pages.find(x=>x.id===pid);p[key].splice(i,1);save();manageList(pid,key);renderContent()}
-function modal(inner){let x=document.getElementById("modal");if(!x){x=document.createElement("div");x.id="modal";x.className="modal-back";document.body.appendChild(x)}x.innerHTML=`<div class="modal">${inner}</div>`}
+function page(){return db.pages.find(p=>p.id===pageId)||db.pages[0]}
+function tab(){let p=page();return p?.tabs.find(t=>t.id===tabId)||p?.tabs[0]}
+function ensure(){let p=page();if(!p)return;if(!p.tabs.length)p.tabs.push(newTab("Tab 1"));if(!p.tabs.find(t=>t.id===tabId))tabId=p.tabs[0].id}
+function render(){ensure();let p=page(),t=tab();
+document.getElementById("app").innerHTML=`<div class="app"><aside class="sidebar">
+<div class="brand">Bookmark Database</div><div class="version">${VERSION}</div>
+<div class="side-actions"><button onclick="newPage()">＋ Page</button><button onclick="exportDB()">Export</button></div>
+<div class="page-list">${db.pages.map(x=>`<div class="page-item ${x.id===p?.id?'active':''}" onclick="selectPage('${x.id}')">${esc(x.icon||"📁")} ${esc(x.name)}</div>`).join("")}</div>
+</aside><main class="main"><div class="topbar"><input value="${esc(query)}" oninput="query=this.value;render()" placeholder="현재 Tab 검색..."><button onclick="editPage()">Page 설정</button><button onclick="openTabSettings()">Tab 설정</button></div>
+<div class="content">${p?`<div class="head"><div><h1>${esc(p.icon||"📁")} ${esc(p.name)}</h1><div class="muted">${esc(p.description||"")}</div></div>
+<div class="actions"><button onclick="newTabPrompt()">＋ Tab</button><button onclick="editPage()">편집</button><button class="danger" onclick="deletePage()">삭제</button></div></div>
+<div class="tabs">${p.tabs.map(x=>`<button class="tab ${x.id===t.id?'active':''}" onclick="selectTab('${x.id}')">${esc(x.icon||"📄")} ${esc(x.name)}</button>`).join("")}<button class="tab" onclick="newTabPrompt()">＋</button></div>
+<div class="toolbar">${t.search?`<input value="${esc(query)}" oninput="query=this.value;render()" placeholder="Tab 내 검색">`:""}
+<select onchange="changeSort(this.value)"><option value="">정렬 없음</option>${t.schema.map(f=>`<option value="${f.id}" ${t.sortField===f.id?'selected':''}>${esc(f.name)} ↑</option>`).join("")}</select>
+<select onchange="changeLayout(this.value)"><option value="grid" ${t.layout==="grid"?"selected":""}>Grid</option><option value="list" ${t.layout==="list"?"selected":""}>List</option></select>
+<button onclick="newRecord()">＋ Record</button><button onclick="openTabSettings()">⚙</button></div>${recordsHTML(t)}</div>`:""}</main></div>`}
+function selectPage(id){pageId=id;tabId=page().tabs[0]?.id;query="";render()}
+function selectTab(id){tabId=id;query="";render()}
+function recordsHTML(t){let a=[...t.records];if(query.trim())a=a.filter(r=>JSON.stringify(r.data).toLowerCase().includes(query.toLowerCase()));
+if(t.sortField){let f=t.schema.find(x=>x.id===t.sortField);a.sort((x,y)=>String(x.data[f?.name]??"").localeCompare(String(y.data[f?.name]??"")))}
+if(!a.length)return`<div class="empty">이 Tab에는 아직 Record가 없습니다.<br><button style="margin-top:12px" onclick="newRecord()">첫 Record 추가</button></div>`;
+return`<div class="cards ${t.layout==="list"?"list":""}">${a.map(r=>recordHTML(t,r)).join("")}</div>`}
+function value(v,type){if(v===undefined||v===null||v==="")return"";if(type==="url"||type==="image")return`<a class="link" href="${esc(v)}" target="_blank" rel="noopener noreferrer">${esc(v)}</a>`;if(type==="boolean")return v?"✓":"✗";if(Array.isArray(v))return v.map(x=>`<span class="pill">${esc(x)}</span>`).join("");return esc(typeof v==="object"?JSON.stringify(v):v)}
+function recordHTML(t,r){let tf=t.schema.find(f=>f.id===t.titleField)||t.schema[0],title=tf?r.data[tf.name]:r.id,fs=t.schema.filter(f=>!t.visibleFields.length||t.visibleFields.includes(f.id));
+return`<article class="card"><div class="card-actions"><button onclick="editRecord('${r.id}')">✎</button><button class="danger" onclick="deleteRecord('${r.id}')">×</button></div><h3>${esc(Array.isArray(title)?title.join(", "):title||"Untitled")}</h3>${fs.filter(f=>f!==tf).map(f=>`<div class="field"><div class="field-name">${esc(f.name)}</div><div>${value(r.data[f.name],f.type)||'<span class="muted">—</span>'}</div></div>`).join("")}</article>`}
+function modal(title,body,buttons){document.body.insertAdjacentHTML("beforeend",`<div class="modal-back" id="modal"><div class="modal"><h2>${title}</h2>${body}<div class="modal-footer">${buttons||'<button onclick="closeModal()">취소</button>'}</div></div></div>`)}
 function closeModal(){document.getElementById("modal")?.remove()}
-function exportDB(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="bookmark-db.json";a.click();URL.revokeObjectURL(a.href)}
+function newPage(){modal("새 Page",`<div class="form"><label>이름<input id="pn"></label><label>아이콘<input id="pi" value="📁"></label><label>설명<textarea id="pd"></textarea></label></div>`,`<button onclick="closeModal()">취소</button><button onclick="createPage()">생성</button>`)}
+function createPage(){let p={id:uid(),name:document.getElementById("pn").value.trim()||"New Page",icon:document.getElementById("pi").value||"📁",description:document.getElementById("pd").value,tabs:[newTab("Tab 1")]};db.pages.push(p);pageId=p.id;tabId=p.tabs[0].id;save();closeModal();render()}
+function editPage(){let p=page();modal("Page 편집",`<div class="form"><label>이름<input id="pn" value="${esc(p.name)}"></label><label>아이콘<input id="pi" value="${esc(p.icon||"📁")}"></label><label>설명<textarea id="pd">${esc(p.description||"")}</textarea></label></div>`,`<button onclick="closeModal()">취소</button><button onclick="savePageEdit()">저장</button>`)}
+function savePageEdit(){let p=page();p.name=document.getElementById("pn").value.trim()||p.name;p.icon=document.getElementById("pi").value;p.description=document.getElementById("pd").value;save();closeModal();render()}
+function deletePage(){if(db.pages.length===1)return alert("마지막 Page는 삭제할 수 없습니다.");if(confirm("이 Page와 내부 Tabs/Records를 모두 삭제할까요?")){let i=db.pages.findIndex(x=>x.id===pageId);db.pages.splice(i,1);pageId=db.pages[Math.max(0,i-1)].id;tabId=page().tabs[0].id;save();render()}}
+function newTabPrompt(){modal("새 Tab",`<div class="form"><label>Tab 이름<input id="tn" value="New Tab"></label></div>`,`<button onclick="closeModal()">취소</button><button onclick="createTab()">생성</button>`)}
+function createTab(){let p=page(),t=newTab(document.getElementById("tn").value.trim()||"New Tab");p.tabs.push(t);tabId=t.id;save();closeModal();render()}
+function openTabSettings(){let t=tab();modal("Tab 설정",`<div class="form">
+<label>이름<input id="tn" value="${esc(t.name)}"></label><label>아이콘<input id="ti" value="${esc(t.icon||"📄")}"></label><label>설명<textarea id="td">${esc(t.description||"")}</textarea></label>
+<label>레이아웃<select id="tl"><option value="grid" ${t.layout==="grid"?"selected":""}>Grid</option><option value="list" ${t.layout==="list"?"selected":""}>List</option></select></label>
+<label>제목 Field<select id="tt">${t.schema.map(f=>`<option value="${f.id}" ${t.titleField===f.id?"selected":""}>${esc(f.name)}</option>`).join("")}</select></label>
+<label class="check"><input id="ts" type="checkbox" ${t.search?"checked":""}> 검색 사용</label>
+<div class="notice">각 Tab은 독립적인 Schema / Records / Tags / Categories / Profiles를 가집니다.</div>
+<h3>Schema</h3><div id="schema">${t.schema.map(f=>schemaRow(f)).join("")}</div><button onclick="addSchemaRow()">＋ Field</button>
+</div>`,`<button onclick="closeModal()">취소</button><button onclick="saveTabSettings()">저장</button>`)}
+function schemaRow(f){return`<div class="schema-row" style="margin:7px 0"><input value="${esc(f.name)}" data-sn="${f.id}"><select data-st="${f.id}">${TYPES.map(x=>`<option value="${x[0]}" ${f.type===x[0]?"selected":""}>${x[1]} (${x[0]})</option>`).join("")}</select><button class="danger" onclick="this.parentElement.remove()">×</button></div>`}
+function addSchemaRow(){document.getElementById("schema").insertAdjacentHTML("beforeend",schemaRow({id:uid(),name:"new_field",type:"text"}))}
+function saveTabSettings(){let t=tab(),old=t.schema,rows=[...document.querySelectorAll("#schema .schema-row")],ns=rows.map(row=>{let n=row.querySelector("[data-sn]"),s=row.querySelector("[data-st]");return{id:n?.dataset.sn||uid(),name:n?.value.trim()||"field",type:s?.value||"text"}});
+t.name=document.getElementById("tn").value.trim()||t.name;t.icon=document.getElementById("ti").value;t.description=document.getElementById("td").value;t.layout=document.getElementById("tl").value;t.titleField=document.getElementById("tt").value;t.search=document.getElementById("ts").checked;t.schema=ns;
+t.records.forEach(r=>{let d={};ns.forEach(f=>{let o=old.find(x=>x.id===f.id);d[f.name]=o?r.data[o.name]:""});r.data=d});if(!ns.some(f=>f.id===t.titleField))t.titleField=ns[0]?.id||"";save();closeModal();render()}
+function newRecord(){recordModal()}
+function recordModal(id){let t=tab(),r=id?t.records.find(x=>x.id===id):{id:uid(),data:{}};modal(id?"Record 편집":"새 Record",`<div class="form">${t.schema.map(f=>inputFor(f,r.data[f.name])).join("")}</div>`,`<button onclick="closeModal()">취소</button><button onclick="saveRecord('${r.id}')">저장</button>`)}
+function inputFor(f,v){v=v??"";if(f.type==="boolean")return`<label class="check"><input id="rf_${f.id}" type="checkbox" ${v?"checked":""}> ${esc(f.name)}</label>`;
+if(["long_text","markdown","json"].includes(f.type))return`<label>${esc(f.name)}<textarea id="rf_${f.id}">${esc(typeof v==="object"?JSON.stringify(v):v)}</textarea></label>`;
+if(f.type==="url")return`<label>${esc(f.name)}<input id="rf_${f.id}" type="url" value="${esc(v)}" placeholder="https://..."></label>`;
+if(["number","rating"].includes(f.type))return`<label>${esc(f.name)}<input id="rf_${f.id}" type="number" value="${esc(v)}"></label>`;
+if(f.type==="date")return`<label>${esc(f.name)}<input id="rf_${f.id}" type="date" value="${esc(v)}"></label>`;
+if(f.type==="datetime")return`<label>${esc(f.name)}<input id="rf_${f.id}" type="datetime-local" value="${esc(v)}"></label>`;
+if(f.type==="color")return`<label>${esc(f.name)}<input id="rf_${f.id}" type="color" value="${esc(v||"#315efb")}"></label>`;
+if(f.type.endsWith("[]"))return`<label>${esc(f.name)}<input id="rf_${f.id}" value="${esc(Array.isArray(v)?v.join(", "):v)}" placeholder="쉼표로 구분"></label>`;
+return`<label>${esc(f.name)}<input id="rf_${f.id}" value="${esc(v)}"></label>`}
+function saveRecord(id){let t=tab(),d={};t.schema.forEach(f=>{let e=document.getElementById("rf_"+f.id);if(f.type==="boolean")d[f.name]=e.checked;else if(f.type.endsWith("[]"))d[f.name]=e.value.split(",").map(x=>x.trim()).filter(Boolean);else if(["number","rating"].includes(f.type))d[f.name]=e.value===""?"":Number(e.value);else if(f.type==="json"){try{d[f.name]=JSON.parse(e.value||"null")}catch(x){d[f.name]=e.value}}else d[f.name]=e.value});
+let r=t.records.find(x=>x.id===id);if(r)r.data=d;else t.records.push({id,data:d});save();closeModal();render()}
+function editRecord(id){recordModal(id)}
+function deleteRecord(id){if(confirm("이 Record를 삭제할까요?")){let t=tab();t.records=t.records.filter(x=>x.id!==id);save();render()}}
+function changeSort(v){tab().sortField=v;save();render()} function changeLayout(v){tab().layout=v;save();render()}
+function exportDB(){let a=document.createElement("a"),b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});a.href=URL.createObjectURL(b);a.download="bookmark-database-v1.2.json";a.click();URL.revokeObjectURL(a.href)}
 render();
 </script>
-</body>
-</html>
+</body></html>
