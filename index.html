@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Bookmark Database Editor v1.5 — Local Database</title>
+<title>Bookmark Database Editor v1.6 — Local Database</title>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#697386;--line:#e5e9f0;--accent:#2563eb;--danger:#dc2626;--chip:#eef2ff;--inc:#dcfce7;--exc:#fee2e2;--inc-t:#166534;--exc-t:#991b1b;--cat:#fef3c7;--cat-t:#92400e;--male:#2563eb;--female:#dc2626;--artist:#7c3aed;--series:#16a34a;--tag:#111827;--character:#0e7490;--character-bg:#cffafe;--character-line:#67e8f9;--production:#db2777;--character-male:#0e7490;--character-female:hsl(0 82.278% 30.98%);--character-both:hsl(270 82.278% 30.98%)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -141,7 +141,7 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <body>
 <div class="app">
 <header>
-  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.5 · 구형 기능 보존형 + 기능 모듈</div></div>
+  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.6 · 구형 기능 보존형 + 기능 모듈</div></div>
   <div class="toolbar">
     <button class="btn primary hidden" id="addBtn">＋ 북마크</button>
     <button class="btn" id="importBtn">가져오기</button>
@@ -313,7 +313,8 @@ function loadTagFilterStates(){try{const x=JSON.parse(localStorage.getItem("tagm
 function saveTagFilterStates(){const cv=a=>[...new Set(a||[])].map(tagCode);localStorage.setItem("tagmark-tag-filter-states",JSON.stringify({include:cv(tagStates.include),exclude:cv(tagStates.exclude)}));}
 function tagState(tag){return (tagStates.include||[]).includes(tag)?"include":(tagStates.exclude||[]).includes(tag)?"exclude":""}
 let editingId=null, curTags=[], curCatId=null, curChars=[];
-let wsTab="main"; // main | tags | profiles
+let wsTab="main"; // main | tags | profiles | custom
+let customTabs=[];
 let characterPageFilter="";
 let selectedIds=new Set(),characterClipboard=null;
 const $=id=>document.getElementById(id);
@@ -457,6 +458,8 @@ async function refresh(){
     $("ws-main").classList.toggle("hidden",wsTab!=="main");
     $("ws-tags").classList.toggle("hidden",wsTab!=="tags");
     $("ws-profiles").classList.toggle("hidden",wsTab!=="profiles");
+    let customBox=$("ws-custom"); if(!customBox){customBox=document.createElement("div");customBox.id="ws-custom";customBox.className="workspace custom-workspace";document.querySelector("main")?.appendChild(customBox)}
+    const ct=currentTab(); customBox.classList.toggle("hidden",!ct||ct.builtin); if(ct&&!ct.builtin)customBox.innerHTML=`<div class="custom-tab-panel"><h2>${esc(ct.name)}</h2><p>이 Tab은 신형 Tab 구조의 사용자 정의 공간입니다.</p><div class="hint">Tab 유형: ${esc(ct.type||"custom")}</div></div>`;
     document.querySelectorAll("#wsTabs .tab").forEach(t=>t.classList.toggle("active",t.dataset.ws===wsTab));
   }
 }
@@ -484,7 +487,28 @@ function getFiltered(){
 }
 
 /* 렌더 */
-function render(){renderCrumb();showViews();renderNewTagKindVisibility();if(activeTopId){fillSubFilter();renderResults();renderTagGrid();renderTagVisibilityKinds();renderRegList();renderProfilePage()}else renderManage()}
+const TAB_KEY="tagmark-page-tabs-v1";
+function defaultTabs(){return [{id:"main",name:"메인",type:"bookmark",builtin:true},{id:"tags",name:"태그 관리",type:"tag",builtin:true},{id:"profiles",name:"프로필",type:"profile",builtin:true}];}
+function loadPageTabs(){try{const all=JSON.parse(localStorage.getItem(TAB_KEY)||"{}");customTabs=Array.isArray(all[activeTopId])?all[activeTopId]:[]}catch(e){customTabs=[]}}
+function savePageTabs(){try{const all=JSON.parse(localStorage.getItem(TAB_KEY)||"{}");all[activeTopId]=customTabs;localStorage.setItem(TAB_KEY,JSON.stringify(all))}catch(e){}}
+function allTabs(){return defaultTabs().concat(customTabs)}
+function renderTabs(){
+  const box=$("wsTabs"); if(!box)return;
+  const tabs=allTabs();
+  box.innerHTML=tabs.map(t=>`<button class="tab ${wsTab===t.id?'active':''}" data-ws="${esc(t.id)}"><span>${esc(t.name)}</span>${t.builtin?'':'<button class="tab-gear" type="button" data-edit-tab="'+esc(t.id)+'" title="Tab 설정">⚙</button>'}</button>`).join('')+'<button class="tab tab-add" id="addTabBtn" type="button" title="Tab 추가">＋</button>';
+  box.querySelectorAll('[data-ws]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-edit-tab]'))return;wsTab=b.dataset.ws;render()});
+  box.querySelectorAll('[data-edit-tab]').forEach(b=>b.onclick=e=>{e.stopPropagation();openTabEdit(b.dataset.editTab)});
+  $("addTabBtn")?.addEventListener('click',openTabAdd);
+}
+function currentTab(){return allTabs().find(t=>t.id===wsTab)||defaultTabs()[0]}
+function openPageAdd(){const m=$("pageAddModal");if(!m)return;$("pageAddName").value="";m.classList.add("open");setTimeout(()=>$("pageAddName")?.focus(),0)}
+function openTabAdd(){if(!activeTopId)return alert("먼저 Page를 선택하세요.");$("tabAddName").value="";$("tabAddType").value="custom";$("tabAddPageHint").textContent="현재 Page: "+(getCat(activeTopId)?.name||"");$("tabAddModal").classList.add("open");setTimeout(()=>$("tabAddName")?.focus(),0)}
+function openTabEdit(id){const t=customTabs.find(x=>x.id===id);if(!t)return;$("tabEditId").value=id;$("tabEditName").value=t.name;$("tabEditType").value=t.type||"custom";$("tabEditModal").classList.add("open");}
+async function createPage(){const n=$("pageAddName").value.trim();if(!n)return alert("Page 이름을 입력하세요.");if(categories.some(c=>c.name===n&&!c.parentId)){return alert("동일한 최상위 Page가 이미 존재합니다.")};await addCat(n);$("pageAddModal").classList.remove("open");activeTopId=categories.find(c=>c.name===n&&!c.parentId)?.id||activeTopId;wsTab="main";render()}
+function createTab(){const n=$("tabAddName").value.trim();if(!n)return alert("Tab 이름을 입력하세요.");if(allTabs().some(t=>t.name===n))return alert("동일한 Tab 이름이 이미 존재합니다.");const t={id:"tab_"+uid(),name:n,type:$("tabAddType").value||"custom",builtin:false,createdAt:Date.now()};customTabs.push(t);savePageTabs();$("tabAddModal").classList.remove("open");wsTab=t.id;render()}
+function updateTab(){const id=$("tabEditId").value,t=customTabs.find(x=>x.id===id);if(!t)return;const n=$("tabEditName").value.trim();if(!n)return alert("Tab 이름을 입력하세요.");if(customTabs.some(x=>x.id!==id&&x.name===n)||defaultTabs().some(x=>x.name===n))return alert("동일한 Tab 이름이 이미 존재합니다.");t.name=n;t.type=$("tabEditType").value||"custom";savePageTabs();$("tabEditModal").classList.remove("open");render()}
+function deleteTab(){const id=$("tabEditId").value,t=customTabs.find(x=>x.id===id);if(!t)return;if(!confirm('"'+t.name+'" Tab을 삭제할까요?'))return;customTabs=customTabs.filter(x=>x.id!==id);savePageTabs();$("tabEditModal").classList.remove("open");wsTab="main";render()}
+function render(){loadPageTabs();renderTabs();renderCrumb();showViews();renderNewTagKindVisibility();if(activeTopId){fillSubFilter();renderResults();renderTagGrid();renderTagVisibilityKinds();renderRegList();renderProfilePage()}else renderManage()}
 /** Main Page: 구형 최상위 카테고리 → 신형 Page */
 let mainPageLayout=localStorage.getItem("tagmark-main-page-layout")||"grid";
 let mainPageSort=localStorage.getItem("tagmark-main-page-sort")||"asc";
@@ -846,7 +870,6 @@ function renderProfilePage(){
 
 
 /* 워크스페이스 탭 */
-document.querySelectorAll("#wsTabs .tab").forEach(t=>t.onclick=()=>{wsTab=t.dataset.ws;render()});
 $("clearTagFilters").onclick=()=>{tagStates={include:[],exclude:[]};saveTagFilterStates();render()};
 $("tagFilterSearch").oninput=()=>renderTagGrid();
 $("addTopCat").onclick=async()=>{const n=$("newTopCat").value.trim();if(!n)return;await addCat(n,null);$("newTopCat").value=""};
@@ -1289,6 +1312,9 @@ openDB().then(async()=>{await refresh()}).catch(e=>{
 </script>
 
 
+<div class="modal" id="pageAddModal"><div class="dialog"><h2>새 Page</h2><div class="hint">구형의 최상위 카테고리에 해당하는 신형 Page를 추가합니다.</div><div class="field"><label>Page 이름</label><input id="pageAddName" autocomplete="off" placeholder="예: Pixiv"></div><div class="modal-actions"><button class="btn" id="pageAddCancel">취소</button><button class="btn primary" id="pageAddApply">추가</button></div></div></div>
+<div class="modal" id="tabAddModal"><div class="dialog"><h2>새 Tab</h2><div class="hint" id="tabAddPageHint"></div><div class="field"><label>Tab 이름</label><input id="tabAddName" autocomplete="off" placeholder="예: 즐겨찾기"></div><div class="field"><label>Tab 유형</label><select id="tabAddType"><option value="custom">Custom</option><option value="bookmark">Bookmark</option><option value="tag">Tag</option><option value="profile">Profile</option><option value="category">Category</option></select></div><div class="modal-actions"><button class="btn" id="tabAddCancel">취소</button><button class="btn primary" id="tabAddApply">추가</button></div></div></div>
+<div class="modal" id="tabEditModal"><div class="dialog"><h2>Tab 설정</h2><input type="hidden" id="tabEditId"><div class="field"><label>Tab 이름</label><input id="tabEditName" autocomplete="off"></div><div class="field"><label>Tab 유형</label><select id="tabEditType"><option value="custom">Custom</option><option value="bookmark">Bookmark</option><option value="tag">Tag</option><option value="profile">Profile</option><option value="category">Category</option></select></div><div class="modal-actions"><button class="btn danger" id="tabEditDelete">삭제</button><span style="flex:1"></span><button class="btn" id="tabEditCancel">취소</button><button class="btn primary" id="tabEditApply">저장</button></div></div></div>
 <div class="modal" id="pageModuleModal"><div class="dialog module-dialog"><h2>페이지 기능 설정</h2><div class="hint" id="pageModuleHint"></div><div class="module-grid">
 <label class="module-row"><span><b>북마크</b><small>목록·추가·수정·일괄작업</small></span><input type="checkbox" id="modBookmark"></label>
 <label class="module-row"><span><b>태그</b><small>필터·태그 관리·사전등록 태그</small></span><input type="checkbox" id="modTags"></label>
@@ -1301,10 +1327,11 @@ openDB().then(async()=>{await refresh()}).catch(e=>{
 function open(){if(!window.activeTopId)return alert('먼저 Page를 선택하세요.');const m=mods();Object.keys(D).forEach(k=>{const e=q('mod'+k[0].toUpperCase()+k.slice(1));if(e)e.checked=!!m[k]});q('pageModuleHint').textContent='현재 Page: '+(window.getCat?.(window.activeTopId)?.name||'');q('pageModuleModal').classList.add('open')}
 function apply(){const m={};Object.keys(D).forEach(k=>m[k]=!!q('mod'+k[0].toUpperCase()+k.slice(1))?.checked);const a=read();a[window.activeTopId]={...D,...m};localStorage.setItem(KEY,JSON.stringify(a));q('pageModuleModal').classList.remove('open');window.render?.()}
 function ui(){if(!window.activeTopId)return;const m=mods(),hide=(e,v)=>e?.classList.toggle('hidden',!!v);hide(document.querySelector('[data-ws="main"]'),!m.bookmark);hide(document.querySelector('[data-ws="tags"]'),!m.tags);hide(document.querySelector('[data-ws="profiles"]'),!m.profiles);hide(q('addBtn'),!m.bookmark);hide(q('subCatFilter'),!m.categories);hide(q('sortDirBtn'),!m.bookmark);hide(q('charField'),!m.characters||!m.profileCharacterLink);hide(q('catPickerInput'),!m.categories);hide(q('selectedCat'),!m.categories);if(wsTab==='main'&&!m.bookmark)wsTab=m.tags?'tags':m.profiles?'profiles':'main';if(wsTab==='tags'&&!m.tags)wsTab=m.bookmark?'main':m.profiles?'profiles':'main';if(wsTab==='profiles'&&!m.profiles)wsTab=m.bookmark?'main':m.tags?'tags':'main'}
-window.getPageModules=mods;window.applyPageModules=ui;document.addEventListener('DOMContentLoaded',()=>{q('pageModuleBtn')?.addEventListener('click',open);q('pageModuleCancel')?.addEventListener('click',()=>q('pageModuleModal').classList.remove('open'));q('pageModuleApply')?.addEventListener('click',apply);q('mainGridBtn')?.addEventListener('click',()=>{mainPageLayout='grid';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainListBtn')?.addEventListener('click',()=>{mainPageLayout='list';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainSortBtn')?.addEventListener('click',()=>{mainPageSort=mainPageSort==='asc'?'desc':'asc';localStorage.setItem('tagmark-main-page-sort',mainPageSort);render()});q('addTopPageBtn')?.addEventListener('click',async()=>{const n=prompt('Page 이름을 입력하세요');if(n?.trim())await addCat(n.trim())});q('addTabBtn')?.addEventListener('click',()=>alert('현재는 구형 기능을 신형 Tab 구조로 옮긴 메인 / 태그 관리 / 프로필 Tab을 제공합니다.'));});const wait=setInterval(()=>{if(typeof window.render==='function'){clearInterval(wait);const r=window.render;window.render=function(){r();setTimeout(ui,0)}}},20)})();
+window.getPageModules=mods;window.applyPageModules=ui;document.addEventListener('DOMContentLoaded',()=>{q('pageModuleBtn')?.addEventListener('click',open);q('pageModuleCancel')?.addEventListener('click',()=>q('pageModuleModal').classList.remove('open'));q('pageModuleApply')?.addEventListener('click',apply);q('mainGridBtn')?.addEventListener('click',()=>{mainPageLayout='grid';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainListBtn')?.addEventListener('click',()=>{mainPageLayout='list';localStorage.setItem('tagmark-main-page-layout',mainPageLayout);render()});q('mainSortBtn')?.addEventListener('click',()=>{mainPageSort=mainPageSort==='asc'?'desc':'asc';localStorage.setItem('tagmark-main-page-sort',mainPageSort);render()});q('addTopPageBtn')?.addEventListener('click',openPageAdd);q('pageAddCancel')?.addEventListener('click',()=>q('pageAddModal').classList.remove('open'));q('pageAddApply')?.addEventListener('click',createPage);q('pageAddName')?.addEventListener('keydown',e=>{if(e.key==='Enter')createPage()});q('tabAddCancel')?.addEventListener('click',()=>q('tabAddModal').classList.remove('open'));q('tabAddApply')?.addEventListener('click',createTab);q('tabAddName')?.addEventListener('keydown',e=>{if(e.key==='Enter')createTab()});q('tabEditCancel')?.addEventListener('click',()=>q('tabEditModal').classList.remove('open'));q('tabEditApply')?.addEventListener('click',updateTab);q('tabEditDelete')?.addEventListener('click',deleteTab);});const wait=setInterval(()=>{if(typeof window.render==='function'){clearInterval(wait);const r=window.render;window.render=function(){r();setTimeout(ui,0)}}},20)})();
 </script>
 <style>
 .main-page-panel{display:flex;flex-direction:column;min-height:calc(100vh - 145px);overflow:hidden}.main-page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}.main-page-head .cat-title{margin:0 0 5px;padding:0;border:0}.main-page-tools{display:flex;gap:6px;flex-wrap:wrap}.main-page-scroll{flex:1;min-height:0;overflow:auto;padding:14px}.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-content:start}.page-list{display:flex;flex-direction:column;gap:8px}.page-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;box-shadow:0 2px 8px #00000008}.page-card-open{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border:0;background:transparent;text-align:left;color:inherit}.page-card-open:hover{background:#f8fafc}.page-card-icon{width:38px;height:38px;border-radius:10px;background:var(--chip);display:grid;place-items:center;color:var(--accent);font-weight:800;flex:0 0 auto}.page-card-main{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.page-card-main strong{font-size:16px;overflow-wrap:anywhere}.page-card-main small{font-size:11px;color:var(--muted)}.page-card-arrow{font-size:25px;color:var(--muted)}.page-card-actions{display:flex;gap:5px;padding:0 12px 12px;justify-content:flex-end}.page-list .page-card-open{padding:11px 14px}.page-list .page-card-actions{padding:0 10px 10px}.page-head-row{display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line);padding:0 10px}.page-head-row .tabs{border-bottom:0;flex:1}.tab-add{font-size:18px;min-width:38px}.module-dialog{max-width:680px}.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.module-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfe;cursor:pointer}.module-row span{display:flex;flex-direction:column;gap:3px}.module-row small{color:var(--muted);font-size:11px}.module-row input{width:18px;height:18px;flex:none}.module-note{margin-top:14px;padding:10px 12px;border-radius:10px;background:#f5f7fb;color:var(--muted);font-size:11px}.sync-box{display:none!important}@media(max-width:650px){.module-grid{grid-template-columns:1fr}.main-page-head{padding:12px}.main-page-scroll{padding:9px}.page-grid{grid-template-columns:1fr}}
+.custom-workspace{padding:24px}.custom-tab-panel{border:1px solid var(--line);border-radius:14px;padding:24px;background:var(--panel)}.tab-gear{border:0;background:transparent;color:var(--muted);padding:0 0 0 5px;cursor:pointer}.tab span{pointer-events:none}
 </style>
 </body>
 </html>

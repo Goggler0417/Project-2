@@ -1,19 +1,19 @@
-# Bookmark Database Editor v1.5
+# Bookmark Database Editor v1.6
 
-구형의 최상위 카테고리를 신형의 Main Page → Page로 매핑하고, Page 내부는 신형 Tab 구조를 사용하면서 구형의 로컬 기능을 유지합니다.
+## 이번 버전
+- v1.5에서 Page 추가가 동작하지 않는 문제 수정
+- Page 추가를 prompt 방식에서 전용 모달 방식으로 변경
+- Page 생성 후 즉시 해당 Page로 진입
+- 신형 Tab 추가 기능 구현
+- Tab 이름/유형 설정 및 삭제 지원
+- 사용자 추가 Tab은 Page별로 독립 저장
+- 기본 Tab(메인/태그 관리/프로필)은 유지
+- Supabase 연동 기능 없음
+- 기존 로컬 IndexedDB 데이터 구조 유지
 
-- Main Page: Grid/List, 스크롤, A→Z/Z→A, Page 추가/이름 변경/삭제
-- Page: 구형 최상위 카테고리
-- Tab: 메인 / 태그 관리 / 프로필
-- 구형 하위 카테고리는 Page 내부 데이터로 유지
-- Page별 북마크/태그/프로필/카테고리/등장인물/프로필↔등장인물 기능 ON/OFF
-- 기존 Tagmark IndexedDB 사용
-- Supabase 로그인/업로드/다운로드/Realtime 동기화 제거
-- 로컬 백업/가져오기 유지
-
-ZIP 내부 구조:
+## ZIP 구조
 ```text
-v1.5/
+v1.6/
 ├── index.html
 └── README.md
 ```
