@@ -303,6 +303,7 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <script>
 const DB="tagmark-local-v1", SB="bookmarks", ST="registeredTags", SC="categories", STI="tagIndex", SF="bookmarkFolders";
 let db, items=[], registeredTags=[], registeredTagMeta=[], categories=[], folders=[];
+let dbReady=null;
 let tagStates={}, activeTopId=null, includeDesc=true, expanded=new Set(), tagFilterOpenKinds=new Set(), tagManageOpenKinds=new Set(), profileOpenFolders=new Set();
 function tagCode(t){let h=2166136261;for(const ch of String(t||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
 function loadTagFilterStates(){try{const x=JSON.parse(localStorage.getItem("tagmark-tag-filter-states")||"{}");const map=new Map(registeredTags.map(t=>[tagCode(t),t]));const cv=a=>(Array.isArray(a)?a:[]).map(v=>map.get(String(v))||v).filter(v=>registeredTags.includes(v));tagStates={include:cv(x.include),exclude:cv(x.exclude)};}catch(e){tagStates={include:[],exclude:[]}}}
@@ -360,29 +361,35 @@ function setDur(str){const m=String(str||"00:00:00").match(/^(\d{1,2}):(\d{1,2})
   $("durH").value=m?+m[1]:0;$("durM").value=m?+m[2]:0;$("durS").value=m?+m[3]:0}
 
 /* IndexedDB */
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,6);r.onupgradeneeded=e=>{const d=e.target.result,tx=e.target.transaction;
-  if(d.objectStoreNames.contains(SB)){
-    const old=tx.objectStore(SB);
-    const kp=old.keyPath;
-    if(kp!=="i"){
-      const get=old.getAll();
-      get.onsuccess=()=>{
-        const rows=get.result||[];
-        d.deleteObjectStore(SB);
-        const ns=d.createObjectStore(SB,{keyPath:"i"});
-        for(const row of rows){
-          const copy={...row};
-          if(copy.i==null&&copy.id!=null)copy.i=copy.id;
-          if(copy.i!=null)ns.put(copy);
-        }
-      };
-    }
-  }else d.createObjectStore(SB,{keyPath:"i"});
-  if(!d.objectStoreNames.contains(ST))d.createObjectStore(ST,{keyPath:"name"});
-  if(!d.objectStoreNames.contains(SC))d.createObjectStore(SC,{keyPath:"id"});
-  if(!d.objectStoreNames.contains(STI))d.createObjectStore(STI,{keyPath:"id"});
-  if(!d.objectStoreNames.contains(SF))d.createObjectStore(SF,{keyPath:"id"});
-};r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
+function openDB(){
+  if(db) return Promise.resolve(db);
+  if(dbReady) return dbReady;
+  dbReady=new Promise((res,rej)=>{
+    let settled=false;
+    const fail=e=>{if(settled)return;settled=true;dbReady=null;rej(e instanceof Error?e:new Error(e?.target?.error?.message||e?.message||"IndexedDB 초기화 실패"))};
+    let r;
+    try{r=indexedDB.open(DB,6)}catch(e){fail(e);return}
+    r.onupgradeneeded=e=>{
+      try{
+        const d=e.target.result;
+        if(!d.objectStoreNames.contains(SB)) d.createObjectStore(SB,{keyPath:"i"});
+        if(!d.objectStoreNames.contains(ST)) d.createObjectStore(ST,{keyPath:"name"});
+        if(!d.objectStoreNames.contains(SC)) d.createObjectStore(SC,{keyPath:"id"});
+        if(!d.objectStoreNames.contains(STI)) d.createObjectStore(STI,{keyPath:"id"});
+        if(!d.objectStoreNames.contains(SF)) d.createObjectStore(SF,{keyPath:"id"});
+      }catch(e){fail(e)}
+    };
+    r.onblocked=()=>fail(new Error("다른 탭에서 로컬 DB가 열려 있어 초기화를 완료할 수 없습니다. 다른 탭을 닫고 다시 시도하세요."));
+    r.onerror=()=>fail(r.error||new Error("IndexedDB를 열 수 없습니다."));
+    r.onsuccess=()=>{
+      if(settled){try{r.result.close()}catch{};return}
+      settled=true;db=r.result;
+      db.onversionchange=()=>{try{db.close()}catch{};db=null;dbReady=null};
+      res(db);
+    };
+  });
+  return dbReady;
+}
 let tagNameToId=new Map,tagIdToName=new Map,tagSeq=1;
 async function loadTagIndex(){tagNameToId.clear();tagIdToName.clear();const a=await rawAll(STI);for(const r of a){if(r?.id!=null&&r.name){tagNameToId.set(r.name,r.id);tagIdToName.set(r.id,r.name);tagSeq=Math.max(tagSeq,Number(r.id)+1)}}}
 async function ensureTagIds(tags){const ids=[];for(const t of tags||[]){if(!t)continue;let id=tagNameToId.get(t);if(id==null){id=tagSeq++;tagNameToId.set(t,id);tagIdToName.set(id,t);await rawPut(STI,{id,name:t},{skipSync:true})}ids.push(id)}return ids}
@@ -502,6 +509,8 @@ function openTabAdd(){if(!activeTopId)return alert("먼저 Page를 선택하세�
 function openTabEdit(id){const t=customTabs.find(x=>x.id===id);if(!t)return;$("tabEditId").value=id;$("tabEditName").value=t.name;$("tabEditType").value=t.type||"custom";$("tabEditModal").classList.add("open");}
 async function createPage(){
   const input=$("pageAddName");
+  try{await openDB()}catch(err){console.error("Page creation DB init failed",err);alert("로컬 DB를 초기화하지 못했습니다.\n\n"+(err?.message||err));return false}
+  if(!db){alert("로컬 DB가 준비되지 않았습니다. 페이지를 생성할 수 없습니다.");return false}
   const n=(input?.value||"").trim();
   if(!n){alert("Page 이름을 입력하세요.");input?.focus();return false}
   if(categories.some(c=>c.name===n&&(c.parentId||null)===null)){alert("동일한 최상위 Page가 이미 존재합니다.");input?.focus();return false}
@@ -551,8 +560,10 @@ function bindCatCrud(box){
   });
 }
 async function addCat(name,parentId=null){
-  if(categories.some(c=>c.name===name&&(c.parentId||null)===(parentId||null))){alert("동일 이름 존재");return}
-  const c={id:uid(),name,parentId:parentId||null};await put(SC,c);categories.push(c);render();
+  try{await openDB();if(!db)throw new Error("로컬 DB가 준비되지 않았습니다.");
+    if(categories.some(c=>c.name===name&&(c.parentId||null)===(parentId||null))){alert("동일 이름 존재");return}
+    const c={id:uid(),name,parentId:parentId||null};await put(SC,c);categories.push(c);render();
+  }catch(err){console.error("Category creation failed",err);alert("카테고리 생성에 실패했습니다.\n\n"+(err?.message||err))}
 }
 
 /** 하위 필터 셀렉트 */ function fillSubFilter(){
@@ -1316,7 +1327,7 @@ $("subCatFilter").onchange=render;
 function fitMainView(){const v=$("view-main");if(!v||v.classList.contains("hidden"))return;const top=v.getBoundingClientRect().top;const h=Math.max(window.innerWidth<=760?0:420,window.innerHeight-top-8);v.style.height=h+"px"}
 window.addEventListener("resize",fitMainView);
 setTimeout(fitMainView,0);
-openDB().then(async()=>{await refresh()}).catch(e=>{
+openDB().then(async()=>{window.localDBReady=true;await refresh()}).catch(e=>{
   console.error("Local IndexedDB init failed",e);
   window.localDBReady=false;
 });
