@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Bookmark Database Editor v1.7 — Local Database</title>
+<title>Bookmark Database Editor v1.9 — Local Database</title>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#697386;--line:#e5e9f0;--accent:#2563eb;--danger:#dc2626;--chip:#eef2ff;--inc:#dcfce7;--exc:#fee2e2;--inc-t:#166534;--exc-t:#991b1b;--cat:#fef3c7;--cat-t:#92400e;--male:#2563eb;--female:#dc2626;--artist:#7c3aed;--series:#16a34a;--tag:#111827;--character:#0e7490;--character-bg:#cffafe;--character-line:#67e8f9;--production:#db2777;--character-male:#0e7490;--character-female:hsl(0 82.278% 30.98%);--character-both:hsl(270 82.278% 30.98%)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -141,7 +141,7 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <body>
 <div class="app">
 <header>
-  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.7 · 구형 기능 보존형 + 기능 모듈</div></div>
+  <div><div class="logo">Tagmark</div><div class="sub">신형 v1.9 · 구형 기능 보존형 + 기능 모듈</div></div>
   <div class="toolbar">
     <button class="btn primary hidden" id="addBtn">＋ 북마크</button>
     <button class="btn" id="importBtn">가져오기</button>
@@ -156,7 +156,7 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <!-- 카테고리 관리 (최상위 페이지) -->
 <div id="view-manage" class="panel main-page-panel">
   <div class="main-page-head">
-    <div><div class="cat-title">Main Page</div><div class="hint">구형의 최상위 카테고리 = 신형의 Page. Page를 열면 신형의 Tab 구조 안에서 구형 기능을 사용합니다.</div></div>
+    <div><div class="cat-title">Main Page</div></div>
     <div class="main-page-tools"><button class="btn sm" id="mainGridBtn">▦ 그리드</button><button class="btn sm" id="mainListBtn">☷ 목록</button><button class="btn sm" id="mainSortBtn">A→Z</button><button class="btn sm primary" id="addTopPageBtn">＋ Page</button></div>
   </div>
   <div class="main-page-scroll"><div class="page-grid" id="catManageList"></div></div>
@@ -303,6 +303,7 @@ header{padding:18px 4px 12px;display:flex;gap:12px;align-items:center;justify-co
 <script>
 const DB="tagmark-local-v1", SB="bookmarks", ST="registeredTags", SC="categories", STI="tagIndex", SF="bookmarkFolders";
 let db, items=[], registeredTags=[], registeredTagMeta=[], categories=[], folders=[];
+let sortDesc=localStorage.getItem("tagmark-sort-desc")!=="false";
 let dbReady=null;
 let tagStates={}, activeTopId=null, includeDesc=true, expanded=new Set(), tagFilterOpenKinds=new Set(), tagManageOpenKinds=new Set(), profileOpenFolders=new Set();
 function tagCode(t){let h=2166136261;for(const ch of String(t||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
@@ -505,7 +506,7 @@ function renderTabs(){
 }
 function currentTab(){return allTabs().find(t=>t.id===wsTab)||defaultTabs()[0]}
 function openPageAdd(){const m=$("pageAddModal");if(!m)return;$("pageAddName").value="";m.classList.add("open");setTimeout(()=>$("pageAddName")?.focus(),0)}
-function openTabAdd(){if(!activeTopId)return alert("먼저 Page를 선택하세요.");$("tabAddName").value="";$("tabAddType").value="custom";$("tabAddPageHint").textContent="현재 Page: "+(getCat(activeTopId)?.name||"");$("tabAddModal").classList.add("open");setTimeout(()=>$("tabAddName")?.focus(),0)}
+function openTabAdd(){if(!activeTopId)return alert("먼저 Page를 선택하세요.");$("tabAddName").value="";$("tabAddType").value="custom";$("tabAddModal").classList.add("open");setTimeout(()=>$("tabAddName")?.focus(),0)}
 function openTabEdit(id){const t=customTabs.find(x=>x.id===id);if(!t)return;$("tabEditId").value=id;$("tabEditName").value=t.name;$("tabEditType").value=t.type||"custom";$("tabEditModal").classList.add("open");}
 async function createPage(){
   const input=$("pageAddName");
@@ -1202,7 +1203,7 @@ document.addEventListener("pointerdown",e=>{if(!e.target.closest(".picker,.searc
 ["search","tagPickerInput","catPickerInput","bookmarkSeriesInput","bookmarkArtistInput","profileSeriesInput","profileTagsInput","bulkTagInput"].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("blur",()=>setTimeout(closeAllSuggests,120));el.addEventListener("input",armSuggestIdle);el.addEventListener("focus",()=>clearTimeout(suggestIdleTimer))});
 $("charCommonTagInput").oninput=e=>showCharCommonTagSug(e.target.value);$("charCommonTagInput").onfocus=e=>showCharCommonTagSug(e.target.value);$("charCommonTagInput").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const first=$("charCommonTagSuggest")?.querySelector("[data-common-tag]");if(first)first.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true}))}};
 
-let sortDesc=localStorage.getItem("tagmark-sort-desc")!=="false";function renderSortDir(){const b=$("sortDirBtn");if(b)b.textContent=sortDesc?"내림차순":"오름차순"}window.editItem=id=>showEdit(items.find(x=>x.id===id));$("sort")?.addEventListener("change",renderResults);$("sortDirBtn")?.addEventListener("click",()=>{sortDesc=!sortDesc;localStorage.setItem("tagmark-sort-desc",String(sortDesc));renderSortDir();renderResults()});$("search")?.addEventListener("input",renderResults);$("searchScope")?.addEventListener("change",renderResults);renderSortDir();
+function renderSortDir(){const b=$("sortDirBtn");if(b)b.textContent=sortDesc?"내림차순":"오름차순"}window.editItem=id=>showEdit(items.find(x=>x.id===id));$("sort")?.addEventListener("change",renderResults);$("sortDirBtn")?.addEventListener("click",()=>{sortDesc=!sortDesc;localStorage.setItem("tagmark-sort-desc",String(sortDesc));renderSortDir();renderResults()});$("search")?.addEventListener("input",renderResults);$("searchScope")?.addEventListener("change",renderResults);renderSortDir();
 $("bulkSelectAll").onclick=()=>{getFiltered().forEach(x=>selectedIds.add(x.id));renderResults();updateBulkBar()};
 $("bulkClear").onclick=()=>{selectedIds.clear();renderResults();updateBulkBar()};
 $("bulkAddTag").onclick=openBulkTagModal;
@@ -1334,8 +1335,8 @@ openDB().then(async()=>{window.localDBReady=true;await refresh()}).catch(e=>{
 </script>
 
 
-<div class="modal" id="pageAddModal"><div class="dialog"><h2>새 Page</h2><div class="hint">구형의 최상위 카테고리에 해당하는 신형 Page를 추가합니다.</div><div class="field"><label>Page 이름</label><input id="pageAddName" autocomplete="off" placeholder="예: Pixiv"></div><div class="modal-actions"><button class="btn" id="pageAddCancel">취소</button><button class="btn primary" id="pageAddApply">추가</button></div></div></div>
-<div class="modal" id="tabAddModal"><div class="dialog"><h2>새 Tab</h2><div class="hint" id="tabAddPageHint"></div><div class="field"><label>Tab 이름</label><input id="tabAddName" autocomplete="off" placeholder="예: 즐겨찾기"></div><div class="field"><label>Tab 유형</label><select id="tabAddType"><option value="custom">Custom</option><option value="bookmark">Bookmark</option><option value="tag">Tag</option><option value="profile">Profile</option><option value="category">Category</option></select></div><div class="modal-actions"><button class="btn" id="tabAddCancel">취소</button><button class="btn primary" id="tabAddApply">추가</button></div></div></div>
+<div class="modal" id="pageAddModal"><div class="dialog"><h2>새 Page</h2><div class="field"><label>Page 이름</label><input id="pageAddName" autocomplete="off"></div><div class="modal-actions"><button class="btn" id="pageAddCancel">취소</button><button class="btn primary" id="pageAddApply">추가</button></div></div></div>
+<div class="modal" id="tabAddModal"><div class="dialog"><h2>새 Tab</h2><div class="field"><label>Tab 이름</label><input id="tabAddName" autocomplete="off"></div><div class="field"><label>Tab 유형</label><select id="tabAddType"><option value="custom">Custom</option><option value="bookmark">Bookmark</option><option value="tag">Tag</option><option value="profile">Profile</option><option value="category">Category</option></select></div><div class="modal-actions"><button class="btn" id="tabAddCancel">취소</button><button class="btn primary" id="tabAddApply">추가</button></div></div></div>
 <div class="modal" id="tabEditModal"><div class="dialog"><h2>Tab 설정</h2><input type="hidden" id="tabEditId"><div class="field"><label>Tab 이름</label><input id="tabEditName" autocomplete="off"></div><div class="field"><label>Tab 유형</label><select id="tabEditType"><option value="custom">Custom</option><option value="bookmark">Bookmark</option><option value="tag">Tag</option><option value="profile">Profile</option><option value="category">Category</option></select></div><div class="modal-actions"><button class="btn danger" id="tabEditDelete">삭제</button><span style="flex:1"></span><button class="btn" id="tabEditCancel">취소</button><button class="btn primary" id="tabEditApply">저장</button></div></div></div>
 <div class="modal" id="pageModuleModal"><div class="dialog module-dialog"><h2>페이지 기능 설정</h2><div class="hint" id="pageModuleHint"></div><div class="module-grid">
 <label class="module-row"><span><b>북마크</b><small>목록·추가·수정·일괄작업</small></span><input type="checkbox" id="modBookmark"></label>
