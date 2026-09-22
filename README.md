@@ -1,8 +1,11 @@
-# Tagmark v2.22
+# Tagmark v2.23
 
-- 검색/정렬/그리드·목록 전환 수정
-- Pages/Duration 메타 표시 및 Duration 00:00:00 입력 수정
-- 북마크 태그 표시를 태그 탭과 동일한 텍스트 색상 버튼 형식으로 통일
-- 북마크 폴더를 필드와 분리하여 record.folderId 기반으로 구현
-- 프로필 그룹: 항목 기준 / 특정 태그 기준 / 수동 폴더 지원
-- 폴더 접기 상태와 설정 IndexedDB 저장
+- Character details are collapsed by default and toggle by clicking the character name.
+- Bookmark tags use the same tag-button presentation as the Tag tab.
+- Search filters the current DOM without rebuilding the input, preventing mobile keyboard/focus loss.
+- Meta Type is hidden from bookmark cards.
+- Generic `item` display uses the field name as its label and shows tag values without Tag Head prefixes.
+- Tag-search fields can restrict searchable Tag Heads from Field Settings.
+- Radio/checkbox/dropdown custom options restored.
+- Explicit field Delete action restored.
+- Field editor UI simplified around Name / Data Type / Input / Display, with advanced settings separated.
