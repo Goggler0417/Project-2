@@ -1,7 +1,8 @@
-# Tagmark v2.25
+# Tagmark v2.26
 
-- 필드 편집기 레이아웃 수정
-- 입력기 미리보기를 필드 편집 영역 아래로 이동
-- 필드별 설정/삭제 버튼을 별도 행에 고정 표시
-- 필수/표시 체크박스 정렬 수정
-- 모바일 필드 편집 레이아웃 재정렬
+Bug-fix release focused on schema/editor integrity.
+
+- Field type/input/display changes remain editable without breaking bookmark edit modal.
+- Newly added bookmark/profile fields are rendered and saved through generic field controls.
+- Field reordering uses pointer-based drag for mouse, touch and pen.
+- Bookmark character details use native collapsed details/summary; clicking the character name toggles tags.
