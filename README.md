@@ -1,8 +1,8 @@
-# Tagmark v2.21
+# Tagmark v2.22
 
-- Tag tab: tag-head manager with right-aligned edit entry, edit/delete modal, per-tab visible tag-head selection.
-- Profile tab: configurable Tag Head for automatically generated Profile Tags.
-- Bookmark common controls: search, sort, grid/list, selection behavior repaired; grid/list now changes the actual bookmark layout.
-- Tabs and fields: reordered with direct drag; touch/pointer reorder added for mobile, avoiding the previous hold-delay interaction.
-- Field editor rebuilt as a live UI editor with real-time input-popup preview, data/input/display controls and drag ordering.
-- Existing v2.20 IndexedDB/schema and legacy-style bookmark/tag/profile UI are retained.
+- 검색/정렬/그리드·목록 전환 수정
+- Pages/Duration 메타 표시 및 Duration 00:00:00 입력 수정
+- 북마크 태그 표시를 태그 탭과 동일한 텍스트 색상 버튼 형식으로 통일
+- 북마크 폴더를 필드와 분리하여 record.folderId 기반으로 구현
+- 프로필 그룹: 항목 기준 / 특정 태그 기준 / 수동 폴더 지원
+- 폴더 접기 상태와 설정 IndexedDB 저장
