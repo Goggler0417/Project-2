@@ -1,11 +1,9 @@
-# Tagmark v2.23
+# Tagmark v2.24
 
+- Tag text uses Tag Head color and displays `Tag Head + Tag` in tag boxes.
+- Bookmark tags use the same box presentation as the Tag tab, without usage counts.
+- Bookmark folders use the legacy folder header/body layout and persist collapse state.
+- Field editor settings/delete controls and checkbox alignment repaired; settings expand inline.
+- Item display uses field name as the item label; tag item values omit Tag Head.
 - Character details are collapsed by default and toggle by clicking the character name.
-- Bookmark tags use the same tag-button presentation as the Tag tab.
-- Search filters the current DOM without rebuilding the input, preventing mobile keyboard/focus loss.
-- Meta Type is hidden from bookmark cards.
-- Generic `item` display uses the field name as its label and shows tag values without Tag Head prefixes.
-- Tag-search fields can restrict searchable Tag Heads from Field Settings.
-- Radio/checkbox/dropdown custom options restored.
-- Explicit field Delete action restored.
-- Field editor UI simplified around Name / Data Type / Input / Display, with advanced settings separated.
+- Render-time tag/head/profile maps and tag usage counts are cached to remove repeated full-database scans.
