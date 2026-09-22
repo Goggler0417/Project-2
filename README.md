@@ -1,13 +1,13 @@
-# Tagmark v2.19
+# Tagmark v2.20
 
-구형 Tagmark의 정보 입력 경험을 신형 범용 Schema DB 위에 컴포넌트로 재구축한 버전입니다.
+구형 Tagmark의 표시/상단/태그/프로필 UI를 신형 Schema DB 위에서 다시 구현한 버전입니다.
 
-## 핵심
-- 신형 IndexedDB만 사용
-- Bookmark Editor를 Title / URL / Category / Character / Artist / Series / Tag / Page-Duration / Note 컴포넌트로 분리
-- 등장인물은 여러 행, 프로필 연결/직접 입력, 성별, 태그, 선택 복사/붙여넣기 지원
-- Profile Editor도 구형 입력 흐름을 별도 컴포넌트로 구성
-- Field마다 UI Component를 지정하여 같은 DB Schema를 페이지별 UI에 연결
-- Tag Head 색상을 태그 칩에 자동 적용
-- Page는 데이터 공간이며 필드는 Tab Schema에서 구성
-- 구형 DB를 읽거나 변환하지 않음
+- 북마크 카드: 구형의 제목 링크, 항목형 정보, 등장인물, 태그, 메모, 하단 작업 버튼 형식
+- 상단 Page/Tab 영역 고정 + 목록만 스크롤
+- 태그 색상은 점이 아니라 태그 텍스트 색상에 적용
+- Tag 탭: 구형의 접이식 태그 종류 폴더, 사용 횟수, 포함/제외 상태, 수정/삭제 형식
+- Profile 탭: 구형의 접이식 그룹 + 프로필 카드 형식, 필드 편집 유지
+- 북마크/프로필 입력 팝업은 기존 legacy component 기반 입력 UI 유지
+- 모바일 상단에 `⌂ Main` 버튼을 명시적으로 추가
+
+DB는 기존 신형 IndexedDB(`tagmark-schema-v204`)를 그대로 사용합니다.
