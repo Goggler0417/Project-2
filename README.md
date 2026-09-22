@@ -1,13 +1,8 @@
-# Tagmark v2.20
+# Tagmark v2.21
 
-구형 Tagmark의 표시/상단/태그/프로필 UI를 신형 Schema DB 위에서 다시 구현한 버전입니다.
-
-- 북마크 카드: 구형의 제목 링크, 항목형 정보, 등장인물, 태그, 메모, 하단 작업 버튼 형식
-- 상단 Page/Tab 영역 고정 + 목록만 스크롤
-- 태그 색상은 점이 아니라 태그 텍스트 색상에 적용
-- Tag 탭: 구형의 접이식 태그 종류 폴더, 사용 횟수, 포함/제외 상태, 수정/삭제 형식
-- Profile 탭: 구형의 접이식 그룹 + 프로필 카드 형식, 필드 편집 유지
-- 북마크/프로필 입력 팝업은 기존 legacy component 기반 입력 UI 유지
-- 모바일 상단에 `⌂ Main` 버튼을 명시적으로 추가
-
-DB는 기존 신형 IndexedDB(`tagmark-schema-v204`)를 그대로 사용합니다.
+- Tag tab: tag-head manager with right-aligned edit entry, edit/delete modal, per-tab visible tag-head selection.
+- Profile tab: configurable Tag Head for automatically generated Profile Tags.
+- Bookmark common controls: search, sort, grid/list, selection behavior repaired; grid/list now changes the actual bookmark layout.
+- Tabs and fields: reordered with direct drag; touch/pointer reorder added for mobile, avoiding the previous hold-delay interaction.
+- Field editor rebuilt as a live UI editor with real-time input-popup preview, data/input/display controls and drag ordering.
+- Existing v2.20 IndexedDB/schema and legacy-style bookmark/tag/profile UI are retained.
