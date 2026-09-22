@@ -1,26 +1,13 @@
-# Tagmark Bookmark Database Editor v2.19
+# Tagmark v2.19
 
-## v2.19 변경 사항
+구형 Tagmark의 정보 입력 경험을 신형 범용 Schema DB 위에 컴포넌트로 재구축한 버전입니다.
 
-- 구형 앱의 북마크 추가/수정창을 기본 UI 컴포넌트로 전환
-- 북마크 편집 필드를 `기본 정보 / 등장인물 / 태그 / 추가 정보` 구역으로 배치 가능
-- 각 구역의 제목을 Page별로 변경 가능
-- 기존 필드 순서/숨김 설정 유지
-- 등장인물 입력 컴포넌트는 구형 앱의 단일 기능 블록 형태로 유지
-  - 여러 등장인물 추가/삭제
-  - 프로필 태그/프로필 연결
-  - 직접 이름 입력
-  - 성별 선택
-  - 작품 내 태그
-  - 선택/복사/붙여넣기
-- 북마크 카드와 프로필 카드의 기존 커스터마이즈 기능 유지
-- 범용 Schema/IndexedDB 구조 유지
+## 핵심
+- 신형 IndexedDB만 사용
+- Bookmark Editor를 Title / URL / Category / Character / Artist / Series / Tag / Page-Duration / Note 컴포넌트로 분리
+- 등장인물은 여러 행, 프로필 연결/직접 입력, 성별, 태그, 선택 복사/붙여넣기 지원
+- Profile Editor도 구형 입력 흐름을 별도 컴포넌트로 구성
+- Field마다 UI Component를 지정하여 같은 DB Schema를 페이지별 UI에 연결
+- Tag Head 색상을 태그 칩에 자동 적용
+- Page는 데이터 공간이며 필드는 Tab Schema에서 구성
 - 구형 DB를 읽거나 변환하지 않음
-
-## 방향
-
-v2.19부터는 단순 범용 입력폼이 아니라,
-
-`범용 DB/Schema → 관계/연동 → 구형 UI 컴포넌트 → Page별 UI 설정`
-
-구조로 구현한다.
