@@ -1,11 +1,7 @@
-# Tagmark v2.39
+# Tagmark v2.40
 
-- Profile 입력 패러다임으로 전환.
-- Profile 구조 편집은 Profile 탭에서만 수행.
-- Profile 탭 하나마다 `(프로필 탭 이름) 입력 필드` 입력 방식이 자동 생성.
-- 다른 탭에서는 생성된 Profile 입력 방식을 선택해서 사용.
-- Profile 입력 필드 편집 팝업: `프로필과 동일` / `사용자 지정`.
-- 사용자 지정에서는 필드 이름, 입력 방식, 표시 방식, 허용 Tag Head를 독립 편집.
-- 실제 입력에서 기존 Profile 선택 후 전체 필드 로드 또는 직접 입력 가능.
-- `순환 선택 버튼 (Cycle Button)` 추가: 2개 이상의 선택지를 순환하며 선택 문자열을 저장.
-- 기존 Character 및 구형 toggle_button 데이터는 읽기 호환 유지.
+- Profile 실제 등록/수정 팝업을 미리보기/Bookmark와 동일한 `fieldInput()` renderer로 통합.
+- checkbox, dropdown, toggle, 순환 선택 버튼, date/datetime, number, URL, tag/profile/category/folder 입력 등 Field Editor 설정이 실제 Profile 팝업에도 적용.
+- Profile 저장 역시 `readGenericField()`를 사용하도록 통합.
+- 탭 순서 변경을 Pointer Events 기반으로 재구현.
+- iPad/Safari용 확실한 대체 조작으로 `탭 순서` 모드와 ←/→ 버튼 추가. 변경 즉시 DB에 저장.
