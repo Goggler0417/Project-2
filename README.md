@@ -1,6 +1,8 @@
-# Tagmark v2.34
+# Tagmark v2.35
 
-- Character tags keep gender-based display colors independently of Tag Head colors.
-- The same gender color override is used in character details and when character tags are mirrored into the general Tag area.
-- Bookmark add/edit modal entry points now report runtime failures instead of silently doing nothing.
-- Browser smoke-tested with a migrated v2.31 database for add/edit/save/cancel and primary management modals.
+- 백업/복원 UI 복구
+- 태그 선택/일괄 수정/삭제
+- 태그 머리 없음 그룹
+- 태그 폴더 펼침 상태 저장
+- 여성 등장인물 색상: 어두운 저채도 자홍색
+- 등장인물 Field 입력 UI 문구/버튼 설정 추가
