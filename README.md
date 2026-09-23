@@ -1,10 +1,11 @@
-# Tagmark v2.32
+# Tagmark v2.33
 
-v2.31 hotfix/refinement:
-- Fixed Add/Edit runtime failure caused by missing `componentField()`.
-- Bookmark Tag display uses one shared rounded Tag box with Tag Head color.
-- Added Language to the same TagPicker pipeline as Artist/Series/Tag.
-- TagPicker filtering now follows each field's `allowedTagHeadIds`.
-- Bookmark save/reopen preserves Language.
+Visual-parity rebuild based directly on the old `index(3).html` UI.
 
-- Character detail tags are also shown in the bookmark's general Tag area, deduplicated and using the same Tag Head colors/boxes.
+- Restored the old palette, system font stack, background, borders, radii and spacing.
+- Restored old button/input/modal/tab visual primitives.
+- Bookmark cards now use the old title, information-line, memo and meta typography.
+- Bookmark/Profile/Character tags use the old `.chip` presentation; Tag management uses the old `.tb` presentation.
+- Restored old Tag Head text colors, character gender colors, folder/profile/tag-folder styling.
+- Removed the dark sidebar visually; the new database/schema architecture remains underneath.
+- New schema/field-management features remain functional but inherit the old visual primitives.
