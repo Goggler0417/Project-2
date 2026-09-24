@@ -1,21 +1,23 @@
-# Tagmark v3.01 Prototype
+# Tagmark v3.02
 
 개발 모토: **DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.**
 
-## v3.01 변경
-- v3.00의 공통 제어영역 배치 문제 수정
-- 모든 탭에 공용 검색/정렬/정렬방향/목록·그리드/선택 UI 추가
-- 정렬 기준: 제목/카테고리/최근 수정/각 Tag Head 등(탭 유형에 맞게 제공)
-- 오름차순↔내림차순, 목록↔그리드 순환 버튼
-- 선택 모드, 전체 선택, 선택 해제, 일괄 삭제
-- Bookmark/Tag/Profile/Category 렌더러를 탭 유형별로 명시적으로 분리하여 탭 내용 누수 방지
-- Page 이름 및 Tab 이름/유형/순서/추가/삭제 설정
-- Bookmark Tab 페이지당 1개 제한
-- Tag Tab별 표시 Tag Head 설정
-- Profile Tab별 Profile 종류 설정
-- 검색/정렬/레이아웃/선택 상태를 tabId별로 독립 저장
-- 실제 레코드 수정 시 updatedAt 기록
-- v3.00 IndexedDB 데이터의 기본 마이그레이션 유지
+## v3.02 핵심 수정
+- `메인 페이지 → 페이지 → 탭` 3단계 구조 추가
+- 페이지 전환 UI 추가. Page마다 Tabs / Schema / Data가 독립
+- 탭 이동 시 Bookmark가 Tag 탭으로 바뀌던 navigation selector 충돌 수정
+- Page 설정에서 Field/Schema 설정 제거
+- Main Page 설정: Page 생성/삭제/이름/순서
+- Page 설정: Page 이름 및 Tab 생성/삭제/이름/순서
+- Tab 설정: 현재 Tab의 Schema/Field 및 Tag Head 관리
+- Tag Head 이름/색상 수정, 추가, 삭제, 순서 변경
+- Bookmark의 등장인물 입력을 구형 구조에 가깝게 변경:
+  - Character/Cast
+  - 성별
+  - 이름/기존 Profile 검색
+  - 별도 등장인물 태그 검색/입력
+  - Add Character/Cast 버튼
+- 기존 공통 검색/정렬/오름·내림/목록·그리드/선택 구조 유지
 
 ## 검증
-정적 JS 문법 검사, 중복 ZIP 경로/버전 문자열 검사를 수행했습니다. 브라우저 자동 상호작용 테스트는 수행하지 않았습니다.
+정적 JavaScript 문법 검사를 수행합니다. 실제 브라우저/iPad 자동 상호작용 테스트는 수행하지 않았습니다.

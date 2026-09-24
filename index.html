@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tagmark v3.01</title>
+<title>Tagmark v3.02</title>
 <style>
 :root{--bg:#f4f6fa;--panel:#fff;--line:#dfe3ea;--text:#1d2430;--muted:#758092;--primary:#2f6fed;--danger:#c53d4d;--shadow:0 8px 24px rgba(0,0,0,.08);--male:#3977c8;--female:#c65087;--both:#8a62bd}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:1180px;margin:auto;padding:0 12px 24px}
@@ -21,16 +21,29 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 .schema-list{display:flex;flex-direction:column;gap:6px}.schema-row{border:1px solid var(--line);border-radius:9px;padding:9px;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}.drag{color:var(--muted)}.input-list{margin:8px 0 0 18px}.input-row{padding:7px;border-left:2px solid var(--line);margin:4px 0;font-size:12px}.condition{background:#f6f8fb;border-radius:8px;padding:8px;margin-top:7px}
 .empty{padding:30px;text-align:center;color:var(--muted)}.split{display:grid;grid-template-columns:220px 1fr;gap:10px}.sidebox{border-right:1px solid var(--line);padding-right:10px}.cat-row{padding:8px;border-bottom:1px solid #eef0f4}.cycle{min-width:100px;font-weight:700}
 @media(max-width:700px){.app{padding:0 7px 12px}.logo{font-size:19px}.tabs{top:55px}.controls{top:91px}.split{grid-template-columns:1fr}.sidebox{border-right:0;border-bottom:1px solid var(--line);padding:0 0 9px}.dialog{padding:12px}.char-grid{grid-template-columns:1fr}.toolbar .btn{padding:7px 8px;font-size:12px}}
+
+.mainbar{display:flex;align-items:center;gap:8px;margin:0 0 7px;padding:7px 8px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.mainbar .main-label{font-weight:800}.mainbar select{width:auto;min-width:170px}
+.page-tabs{display:flex;gap:5px;align-items:center;overflow:auto;padding:2px 0 7px}
+.page-pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;font-weight:700;white-space:nowrap;cursor:pointer}
+.page-pill.active{background:var(--text);color:#fff;border-color:var(--text)}
+.settings-section{border:1px solid var(--line);border-radius:11px;padding:11px;margin:10px 0}.settings-section h3{margin:0 0 8px;font-size:15px}
+.head-edit-row{display:grid;grid-template-columns:auto 1fr 50px auto;gap:6px;align-items:center;margin:6px 0}.head-edit-row input[type=color]{padding:2px}
+.char-editor{border:1px solid var(--line);border-radius:12px;padding:11px;margin:8px 0;background:#fafbfe;overflow:visible}
+.char-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+.char-choice-panel{border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:0 0 8px}.char-choice-panel legend{font-size:11px;color:var(--muted)}
+.char-choice-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:4px 0}.char-choice-row label{display:flex;gap:4px;align-items:center}.char-choice-row input{width:auto}
+.char-input-wrap{position:relative;margin-top:7px}.char-suggest{display:none;position:absolute;left:0;right:0;top:100%;z-index:120;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);max-height:220px;overflow:auto}.char-suggest.open{display:block}.char-suggest button{width:100%;border:0;background:#fff;text-align:left;padding:8px;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="app">
 <header>
- <div><div class="logo">Tagmark</div><div class="sub">v3.01 · Local Prototype</div></div>
- <div class="toolbar"><button class="btn" id="pageSettingsBtn">페이지 설정</button><button class="btn" id="importBtn">가져오기</button><button class="btn" id="exportBtn">백업</button><button class="btn primary" id="addBtn">＋ 북마크</button></div>
+ <div><div class="logo">Tagmark</div><div class="sub">v3.02 · Local Prototype</div></div>
+ <div class="toolbar"><button class="btn" id="mainSettingsBtn">메인 페이지 설정</button><button class="btn" id="pageSettingsBtn">페이지 설정</button><button class="btn" id="tabSettingsBtn">탭 설정</button><button class="btn" id="importBtn">가져오기</button><button class="btn" id="exportBtn">백업</button><button class="btn primary" id="addBtn">＋ 북마크</button></div>
 </header>
 <div class="motto"><b>개발 모토:</b> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.</div>
-<div class="tabs" id="tabs"></div>
+<div class="mainbar" id="mainbar"></div><div class="page-tabs" id="pageTabs"></div><div class="tabs" id="tabs"></div>
 <div class="panel">
  <div class="controls" id="controls"></div>
  <div class="content" id="content"></div>
@@ -60,7 +73,7 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 </div></div>
 
 <div class="modal" id="settingsModal"><div class="dialog wide">
-<h2>페이지 설정 · Schema</h2>
+<h2>탭 설정 · Schema</h2>
 <div class="hint">DB 데이터와 분리된 구성 정보입니다. Field는 표시 컨테이너이고, 실제 데이터 단위는 Input입니다.</div>
 <div class="field"><label>필드</label><div class="schema-list" id="schemaList"></div></div>
 <button class="btn" id="addField">＋ 필드 추가</button>
@@ -88,6 +101,23 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 <div class="modal-actions"><button class="btn danger" id="deleteInput">입력칸 삭제</button><button class="btn" data-close="inputModal">취소</button><button class="btn primary" id="saveInput">저장</button></div>
 </div></div>
 
+
+<div class="modal" id="mainSettingsModal"><div class="dialog wide">
+<h2>메인 페이지 설정</h2>
+<div class="hint">메인 페이지는 여러 Page를 묶는 최상위 공간입니다. 각 Page는 자체 Tabs / Schema / Data를 가집니다.</div>
+<div class="field"><label>메인 페이지 이름</label><input id="mainNameEdit"></div>
+<div class="settings-section"><h3>페이지</h3><div id="mainPageList"></div><button class="btn sm" id="addPageBtn">＋ 페이지 추가</button></div>
+<div class="modal-actions"><button class="btn" data-close="mainSettingsModal">취소</button><button class="btn primary" id="saveMainSettings">저장</button></div>
+</div></div>
+
+<div class="modal" id="pageOnlySettingsModal"><div class="dialog">
+<h2>페이지 설정</h2>
+<div class="field"><label>페이지 이름</label><input id="pageOnlyName"></div>
+<div class="hint">필드와 Schema는 Page 설정이 아니라 각 Tab의 「탭 설정」에서 관리합니다.</div>
+<div class="settings-section"><h3>탭 순서</h3><div id="pageOnlyTabs"></div><button class="btn sm" id="pageAddTab">＋ 탭 추가</button></div>
+<div class="modal-actions"><button class="btn" data-close="pageOnlySettingsModal">취소</button><button class="btn primary" id="savePageOnly">저장</button></div>
+</div></div>
+
 <input type="file" id="fileInput" accept=".json" class="hidden">
 <script>
 "use strict";
@@ -95,7 +125,7 @@ const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g
 const DB_NAME="tagmark-v3", STORE="state"; let db=null, activeTab="bookmarks", editingBookmark=null, editingProfile=null, editingField=null, editingInput=null;
 const headColors=["#c65087","#3977c8","#8a62bd","#9a6b28","#2e8b72","#b24d3e","#596477","#1b7f9e"];
 const fresh=()=>({
- version:"3.01", ids:{bookmark:{next:3,free:[]},tag:{next:12,free:[]},profile:{next:3,free:[]},folder:{next:2,free:[]},category:{next:4,free:[]},field:{next:8,free:[]},input:{next:10,free:[]},head:{next:8,free:[]}},
+ version:"3.02", ids:{bookmark:{next:3,free:[]},tag:{next:12,free:[]},profile:{next:3,free:[]},folder:{next:2,free:[]},category:{next:4,free:[]},field:{next:8,free:[]},input:{next:10,free:[]},head:{next:8,free:[]}},
  page:{id:"p1",name:"기본 페이지",tabs:[{id:"bookmarks",type:"bookmark",name:"북마크"},{id:"tags",type:"tag",name:"태그"},{id:"profiles",type:"profile",name:"등장인물"},{id:"categories",type:"category",name:"카테고리"}]},
  tagHeads:[
   {id:"h1",name:"artist",color:"#9a6b28"},{id:"h2",name:"series",color:"#8a62bd"},{id:"h3",name:"language",color:"#2e8b72"},{id:"h4",name:"character",color:"#3977c8"},{id:"h5",name:"gender",color:"#c65087"},{id:"h6",name:"role",color:"#b24d3e"},{id:"h7",name:"tag",color:"#596477"}],
@@ -119,7 +149,7 @@ const fresh=()=>({
   {id:"f7",name:"메모",display:"memo",visible:true,inputs:[{id:"ia",name:"메모",type:"value",format:"longtext",condition:{mode:"always"}}]}
  ]},
  bookmarks:[
-  {id:"b1",folderId:"d1",categoryId:"c1",values:{i1:"예시 북마크",i2:"https://example.com",i3:["t2"],i4:["t1"],i5:"page",i6:120,i8:["r1"],i9:["t3","t4"],ia:"v3.01 프로토타입 예시입니다."}},
+  {id:"b1",folderId:"d1",categoryId:"c1",values:{i1:"예시 북마크",i2:"https://example.com",i3:["t2"],i4:["t1"],i5:"page",i6:120,i8:["r1"],i9:["t3","t4"],ia:"v3.02 프로토타입 예시입니다."}},
   {id:"b2",folderId:null,categoryId:"c2",values:{i1:"영상 예시",i2:"https://example.com/video",i3:["t2"],i5:"video",i7:5535,i8:["r2"],i9:["tb"]}}
  ]});
 let state=fresh();
@@ -243,7 +273,7 @@ function renderInputTypeBoxes(i){const t=$("inputType").value;$("valueFormatBox"
 $("saveInput").onclick=()=>{const f=state.schema.fields.find(x=>x.id===editingField),i=f.inputs.find(x=>x.id===editingInput);i.name=$("inputName").value.trim()||i.name;i.type=$("inputType").value;if(i.type==="value")i.format=$("inputFormat").value;else delete i.format;if(i.type==="tag"){i.allowedHeadIds=[...$("allowedHeads").querySelectorAll("input:checked")].map(x=>x.value);i.routeHeadIds=[...$("routeHeads").querySelectorAll("input:checked")].map(x=>x.value).filter(x=>i.allowedHeadIds.includes(x))}if(i.type==="profile")i.profileKind=$("inputProfileKind").value;i.condition=$("conditionMode").value==="always"?{mode:"always"}:{mode:"equals",inputId:$("conditionInput").value,value:$("conditionValue").value};persist();modal("inputModal",false);renderFieldInputs(f)}
 $("deleteInput").onclick=()=>{const f=state.schema.fields.find(x=>x.id===editingField);if(confirm("입력칸을 삭제할까요?")){f.inputs=f.inputs.filter(x=>x.id!==editingInput);persist();modal("inputModal",false);renderFieldInputs(f)}}
 
-$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tagmark-v3.01-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tagmark-v3.02-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x.page||!x.schema||!x.tags)throw Error("형식 오류");if(confirm("현재 프로토타입 데이터를 가져온 백업으로 교체할까요?")){state=x;persist();render()}}catch(err){alert("가져오기 실패: "+err.message)}e.target.value=""}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open,.search-suggest.open").forEach(x=>x.classList.remove("open"))});
 document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target.closest(".search-wrap"))document.querySelectorAll(".search-suggest.open").forEach(x=>x.classList.remove("open"))});
@@ -252,7 +282,7 @@ document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target
 </script>
 
 <style>
-/* v3.01 common tab toolbar + layouts */
+/* v3.02 common tab toolbar + layouts */
 .panel{min-height:0;overflow:visible}
 .controls{top:96px;display:block;padding:7px 8px;background:#fff}
 .common-tools{display:grid;grid-template-columns:minmax(190px,1fr) minmax(130px,190px) auto auto auto auto;gap:6px;align-items:center}
@@ -269,10 +299,10 @@ document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target
 @media(max-width:760px){.common-tools{grid-template-columns:minmax(0,1fr) auto auto auto}.common-tools .search-wrap{grid-column:1/-1}.common-tools .sort-select{grid-column:1/3}.tab-config-row{grid-template-columns:auto 1fr auto}.tab-config-row .tab-type{grid-column:2/3}.tab-config-detail{grid-column:1/-1}.controls{top:91px}}
 </style>
 <script>
-/* v3.01 interaction layer. Data facts remain in data arrays; configuration stays in page/schema/ui. */
+/* v3.02 interaction layer. Data facts remain in data arrays; configuration stays in page/schema/ui. */
 let uiState={};
 function ensureV301(){
- state.version="3.01";
+ state.version="3.02";
  state.page.ui=state.page.ui||{};
  state.page.ui.tabs=state.page.ui.tabs||{};
  state.page.tabs.forEach(t=>{t.visibleTagHeadIds=t.visibleTagHeadIds||[];if(t.type==="profile"&&!t.profileKind)t.profileKind="character"});
@@ -345,6 +375,175 @@ const oldOpenBookmark=openBookmark;openBookmark=function(id=null){oldOpenBookmar
 const oldOpenProfile=openProfile;openProfile=function(id=null){oldOpenProfile(id);const oldSave=$("saveProfile").onclick;$("saveProfile").onclick=()=>{oldSave();const p=id?state.profiles.find(x=>x.id===id):state.profiles[state.profiles.length-1];if(p)p.updatedAt=Date.now();persist()}}
 
 ensureV301();persist();render();
+
+/* ========================= v3.02 clean hierarchy / navigation fixes ========================= */
+function cloneDefaultPage(name,id){
+ const base=fresh();
+ const p={
+  id, name,
+  tabs:structuredClone(base.page.tabs),
+  ui:{tabs:{}},
+  tagHeads:structuredClone(base.tagHeads),
+  tags:[], profiles:[], categories:structuredClone(base.categories), folders:[],
+  schema:structuredClone(base.schema), bookmarks:[]
+ };
+ return p;
+}
+function snapshotCurrentPage(){
+ return {id:state.page.id,name:state.page.name,tabs:state.page.tabs,ui:state.page.ui||{tabs:{}},
+ tagHeads:state.tagHeads,tags:state.tags,profiles:state.profiles,categories:state.categories,folders:state.folders,
+ schema:state.schema,bookmarks:state.bookmarks,ids:state.ids};
+}
+function applyPage(p){
+ state.page={id:p.id,name:p.name,tabs:p.tabs,ui:p.ui||{tabs:{}}};
+ state.tagHeads=p.tagHeads||[];state.tags=p.tags||[];state.profiles=p.profiles||[];state.categories=p.categories||[];
+ state.folders=p.folders||[];state.schema=p.schema||{fields:[]};state.bookmarks=p.bookmarks||[];
+ state.ids=p.ids||structuredClone(fresh().ids);
+ if(!state.page.ui)state.page.ui={tabs:{}};
+ activeTab=state.page.tabs.some(t=>t.id===activeTab)?activeTab:(state.page.tabs[0]?.id||null);
+}
+function ensureV302(){
+ if(!state.main){
+  const snap=snapshotCurrentPage();
+  state.main={id:"m1",name:"Tagmark",activePageId:snap.id||"p1",pages:[snap]};
+ }
+ if(!state.main.pages?.length)state.main.pages=[cloneDefaultPage("기본 페이지","p1")];
+ let cur=state.main.pages.find(p=>p.id===state.main.activePageId)||state.main.pages[0];
+ state.main.activePageId=cur.id; applyPage(cur);
+ state.version="3.02";
+}
+function commitPage(){
+ if(!state.main)return;
+ const i=state.main.pages.findIndex(p=>p.id===state.main.activePageId);
+ const snap=snapshotCurrentPage();
+ if(i>=0)state.main.pages[i]=snap;else state.main.pages.push(snap);
+}
+const persistV302=persist;
+persist=function(){commitPage();persistV302()}
+function switchPage(id){
+ commitPage();const p=state.main.pages.find(x=>x.id===id);if(!p)return;
+ state.main.activePageId=id;activeTab=p.tabs[0]?.id||null;applyPage(p);persistV302();render();
+}
+function renderHierarchy(){
+ $("mainbar").innerHTML=`<span class="main-label">${esc(state.main.name)}</span><span class="meta">메인 페이지</span><span style="margin-left:auto" class="meta">${state.main.pages.length} Pages</span>`;
+ $("pageTabs").innerHTML=state.main.pages.map(p=>`<button class="page-pill ${p.id===state.main.activePageId?'active':''}" data-page-switch="${p.id}">${esc(p.name)}</button>`).join("");
+ document.querySelectorAll("[data-page-switch]").forEach(b=>b.onclick=()=>switchPage(b.dataset.pageSwitch));
+}
+const renderTabsV301=renderTabs;
+renderTabs=function(){
+ $("tabs").innerHTML=state.page.tabs.map(t=>`<button class="tab ${t.id===activeTab?"active":""}" data-nav-tab="${t.id}">${esc(t.name)}</button>`).join("");
+ document.querySelectorAll("[data-nav-tab]").forEach(b=>b.onclick=()=>{activeTab=b.dataset.navTab;render()});
+}
+const renderV301=render;
+render=function(){
+ ensureV302();renderHierarchy();renderTabs();
+ const t=state.page.tabs.find(x=>x.id===activeTab);
+ if(!t){$("controls").innerHTML="";$("content").innerHTML='<div class="empty">탭이 없습니다.</div>';return}
+ if(t.type==="bookmark")renderBookmarks();else if(t.type==="tag")renderTags();else if(t.type==="profile")renderProfiles();else if(t.type==="category")renderCategories();else renderCustom();
+ $("addBtn").classList.toggle("hidden",t.type!=="bookmark");
+}
+
+/* Main Page settings */
+function openMainSettings(){
+ commitPage();$("mainNameEdit").value=state.main.name;renderMainPageList();modal("mainSettingsModal");
+}
+function renderMainPageList(){
+ $("mainPageList").innerHTML=state.main.pages.map((p,i)=>`<div class="schema-row"><span class="drag">≡</span><input data-main-page-name="${p.id}" value="${esc(p.name)}"><span><button class="btn sm" data-page-up="${p.id}">↑</button><button class="btn sm" data-page-down="${p.id}">↓</button><button class="btn sm danger" data-page-delete="${p.id}">삭제</button></span></div>`).join("");
+ document.querySelectorAll("[data-main-page-name]").forEach(x=>x.oninput=()=>{const p=state.main.pages.find(p=>p.id===x.dataset.mainPageName);if(p)p.name=x.value});
+ document.querySelectorAll("[data-page-up],[data-page-down]").forEach(b=>b.onclick=()=>{const id=b.dataset.pageUp||b.dataset.pageDown,i=state.main.pages.findIndex(p=>p.id===id),j=i+(b.dataset.pageUp?-1:1);if(j>=0&&j<state.main.pages.length){[state.main.pages[i],state.main.pages[j]]=[state.main.pages[j],state.main.pages[i]];renderMainPageList()}});
+ document.querySelectorAll("[data-page-delete]").forEach(b=>b.onclick=()=>{if(state.main.pages.length<=1)return alert("최소 한 Page가 필요합니다.");if(!confirm("Page와 그 안의 모든 데이터를 삭제할까요?"))return;const id=b.dataset.pageDelete;state.main.pages=state.main.pages.filter(p=>p.id!==id);if(state.main.activePageId===id)state.main.activePageId=state.main.pages[0].id;renderMainPageList()});
+}
+$("addPageBtn").onclick=()=>{let n=1,id;do{id="p"+(++n).toString(36)}while(state.main.pages.some(p=>p.id===id));state.main.pages.push(cloneDefaultPage("새 페이지 "+state.main.pages.length,id));renderMainPageList()}
+$("saveMainSettings").onclick=()=>{state.main.name=$("mainNameEdit").value.trim()||"Tagmark";let cur=state.main.pages.find(p=>p.id===state.main.activePageId)||state.main.pages[0];state.main.activePageId=cur.id;applyPage(cur);persist();modal("mainSettingsModal",false);render()}
+$("mainSettingsBtn").onclick=openMainSettings;
+
+/* Page settings = page facts + tabs only; no schema */
+function openPageOnlySettings(){
+ $("pageOnlyName").value=state.page.name;renderPageOnlyTabs();modal("pageOnlySettingsModal");
+}
+function renderPageOnlyTabs(){
+ $("pageOnlyTabs").innerHTML=state.page.tabs.map(t=>`<div class="schema-row"><span class="drag">≡</span><input data-po-tab-name="${t.id}" value="${esc(t.name)}"><span><button class="btn sm" data-po-up="${t.id}">↑</button><button class="btn sm" data-po-down="${t.id}">↓</button><button class="btn sm danger" data-po-del="${t.id}">×</button></span></div>`).join("");
+ document.querySelectorAll("[data-po-tab-name]").forEach(x=>x.oninput=()=>{const t=state.page.tabs.find(t=>t.id===x.dataset.poTabName);if(t)t.name=x.value});
+ document.querySelectorAll("[data-po-up],[data-po-down]").forEach(b=>b.onclick=()=>{const id=b.dataset.poUp||b.dataset.poDown,i=state.page.tabs.findIndex(t=>t.id===id),j=i+(b.dataset.poUp?-1:1);if(j>=0&&j<state.page.tabs.length){[state.page.tabs[i],state.page.tabs[j]]=[state.page.tabs[j],state.page.tabs[i]];renderPageOnlyTabs()}});
+ document.querySelectorAll("[data-po-del]").forEach(b=>b.onclick=()=>{if(state.page.tabs.length<=1)return alert("최소 한 탭이 필요합니다.");state.page.tabs=state.page.tabs.filter(t=>t.id!==b.dataset.poDel);if(activeTab===b.dataset.poDel)activeTab=state.page.tabs[0].id;renderPageOnlyTabs()});
+}
+$("pageAddTab").onclick=()=>{const id="v"+Date.now().toString(36);state.page.tabs.push({id,type:"custom",name:"새 탭",visibleTagHeadIds:[]});renderPageOnlyTabs()}
+$("savePageOnly").onclick=()=>{state.page.name=$("pageOnlyName").value.trim()||state.page.name;persist();modal("pageOnlySettingsModal",false);render()}
+$("pageSettingsBtn").onclick=openPageOnlySettings;
+
+/* Tab settings owns schema/fields and current tab-specific configuration */
+function openTabSettings(){
+ renderSchemaList();renderHeadEditorV302();
+ const old=$("pageTabEditor");if(old)old.remove();
+ modal("settingsModal");
+}
+$("tabSettingsBtn").onclick=openTabSettings;
+function renderHeadEditorV302(){
+ $("headEditor").innerHTML=state.tagHeads.map((h,i)=>`<div class="head-edit-row"><span class="drag">≡</span><input data-hname="${h.id}" value="${esc(h.name)}"><input type="color" data-hcolor="${h.id}" value="${h.color}"><span><button class="btn sm" data-hup="${h.id}">↑</button><button class="btn sm" data-hdown="${h.id}">↓</button><button class="btn sm danger" data-hdel="${h.id}">삭제</button></span></div>`).join("")+`<button class="btn sm" id="addHeadV302">＋ 태그 머리 추가</button>`;
+ document.querySelectorAll("[data-hname]").forEach(x=>x.oninput=()=>{const h=head(x.dataset.hname);if(h)h.name=x.value});
+ document.querySelectorAll("[data-hcolor]").forEach(x=>x.oninput=()=>{const h=head(x.dataset.hcolor);if(h)h.color=x.value});
+ document.querySelectorAll("[data-hup],[data-hdown]").forEach(b=>b.onclick=()=>{const id=b.dataset.hup||b.dataset.hdown,i=state.tagHeads.findIndex(h=>h.id===id),j=i+(b.dataset.hup?-1:1);if(j>=0&&j<state.tagHeads.length){[state.tagHeads[i],state.tagHeads[j]]=[state.tagHeads[j],state.tagHeads[i]];renderHeadEditorV302()}});
+ document.querySelectorAll("[data-hdel]").forEach(b=>b.onclick=()=>{const id=b.dataset.hdel,used=state.tags.some(t=>t.headId===id);if(used&&!confirm("이 태그 머리와 그 아래 모든 태그를 삭제합니다. 계속할까요?"))return;if(!used&&!confirm("태그 머리를 삭제할까요?"))return;const tids=state.tags.filter(t=>t.headId===id).map(t=>t.id);state.tags=state.tags.filter(t=>t.headId!==id);state.profiles.forEach(p=>p.tagIds=(p.tagIds||[]).filter(x=>!tids.includes(x)));state.bookmarks.forEach(bm=>Object.keys(bm.values||{}).forEach(k=>{if(Array.isArray(bm.values[k]))bm.values[k]=bm.values[k].filter(x=>!tids.includes(x))}));state.schema.fields.forEach(f=>f.inputs.forEach(i=>{i.allowedHeadIds=(i.allowedHeadIds||[]).filter(x=>x!==id);i.routeHeadIds=(i.routeHeadIds||[]).filter(x=>x!==id)}));state.page.tabs.forEach(t=>t.visibleTagHeadIds=(t.visibleTagHeadIds||[]).filter(x=>x!==id));state.tagHeads=state.tagHeads.filter(h=>h.id!==id);renderHeadEditorV302()});
+ $("addHeadV302").onclick=()=>{state.tagHeads.push({id:alloc("head","h"),name:"new-head",color:headColors[state.tagHeads.length%headColors.length]});renderHeadEditorV302()}
+}
+$("saveSettings").onclick=()=>{persist();modal("settingsModal",false);render()};
+
+/* Old-style Character/Profile input inside Bookmark editor */
+function renderCharacterEditors(inp,values){
+ const ids=values[inp.id]||[];
+ return `<div data-char-list="${inp.id}">${ids.map((pid,n)=>characterBox(inp.id,pid,n)).join("")}</div><button type="button" class="btn primary" data-char-add="${inp.id}" style="width:100%;margin-top:8px">Add Character/Cast</button>`;
+}
+function characterBox(inputId,pid,n){
+ const p=profile(pid);const gender=(p?.tagIds||[]).map(tag).find(t=>head(t?.headId)?.name==="gender")?.name||"male";
+ const role=(p?.tagIds||[]).map(tag).find(t=>head(t?.headId)?.name==="role")?.name||"character";
+ const deps=(p?.tagIds||[]).filter(id=>!["gender","role"].includes(head(tag(id)?.headId)?.name));
+ return `<div class="char-editor" data-charbox="${inputId}" data-pid="${pid||""}"><div class="char-head"><span>등장인물 ${n+1}</span><button type="button" class="btn sm danger" data-char-remove="${inputId}" data-pid="${pid||""}">삭제</button></div>
+ <fieldset class="char-choice-panel"><legend>Category:</legend><div class="char-choice-row"><label><input type="radio" name="role_${inputId}_${n}" value="character" ${role==="character"?"checked":""}> character</label><label><input type="radio" name="role_${inputId}_${n}" value="cast" ${role==="cast"?"checked":""}> cast</label></div>
+ <div class="char-choice-row"><span class="hint">성별:</span><label><input type="radio" name="gender_${inputId}_${n}" value="male" ${gender==="male"?"checked":""}> 남성</label><label><input type="radio" name="gender_${inputId}_${n}" value="female" ${gender==="female"?"checked":""}> 여성</label><label><input type="radio" name="gender_${inputId}_${n}" value="both" ${gender==="both"?"checked":""}> 양성</label></div></fieldset>
+ <div class="char-input-wrap"><input data-char-name="${inputId}" data-pid="${pid||""}" value="${esc(p?.name||"")}" placeholder="이름 또는 기존 프로필 검색" autocomplete="off"><div class="char-suggest"></div></div>
+ <div class="char-input-wrap"><input data-char-tag-search="${inputId}" data-pid="${pid||""}" placeholder="등장인물에 적용할 태그 검색..." autocomplete="off"><div class="char-suggest"></div></div>
+ <div class="chips">${deps.map(id=>tagChip(id)).join("")}</div></div>`;
+}
+function bindCharacterEditors(inp,values){
+ const list=document.querySelector(`[data-char-list="${inp.id}"]`);
+ const rerender=()=>{list.innerHTML=(values[inp.id]||[]).map((pid,n)=>characterBox(inp.id,pid,n)).join("");bindBoxes()};
+ const bindBoxes=()=>{
+  list.querySelectorAll(`[data-char-remove="${inp.id}"]`).forEach(b=>b.onclick=()=>{values[inp.id]=(values[inp.id]||[]).filter(x=>x!==b.dataset.pid);rerender()});
+  list.querySelectorAll(`[data-char-name="${inp.id}"]`).forEach(el=>{const sug=el.nextElementSibling;const show=()=>{const q=el.value.toLowerCase();const ps=state.profiles.filter(p=>(!inp.profileKind||p.kind===inp.profileKind)&&p.name.toLowerCase().includes(q));sug.innerHTML=ps.map(p=>`<button type="button" data-usep="${p.id}">${esc(p.name)} · ${esc(tagLabel(p.representativeTagId))}</button>`).join("")+`<button type="button" data-newp="1">＋ "${esc(el.value)}" 새 등장인물</button>`;sug.classList.add("open");sug.querySelectorAll("[data-usep]").forEach(b=>b.onclick=()=>{const old=el.dataset.pid;values[inp.id]=(values[inp.id]||[]).map(x=>x===old?b.dataset.usep:x);rerender()});sug.querySelector("[data-newp]").onclick=()=>{const name=el.value.trim();if(!name)return;const pid=createCharacterProfile(name);const old=el.dataset.pid;if(old)values[inp.id]=(values[inp.id]||[]).map(x=>x===old?pid:x);else values[inp.id]=[...(values[inp.id]||[]),pid];rerender()}};el.oninput=show;el.onfocus=show});
+  list.querySelectorAll(`[data-char-tag-search="${inp.id}"]`).forEach(el=>{const sug=el.nextElementSibling;const show=()=>{const q=el.value.toLowerCase(),pid=el.dataset.pid;const ts=state.tags.filter(t=>head(t.headId)?.name!=="character"&&tagLabel(t.id).toLowerCase().includes(q)).slice(0,30);sug.innerHTML=ts.map(t=>`<button type="button" data-uset="${t.id}">${tagChip(t.id)}</button>`).join("");sug.classList.add("open");sug.querySelectorAll("[data-uset]").forEach(b=>b.onclick=()=>{const p=profile(pid);if(p&&!p.tagIds.includes(b.dataset.uset)){p.tagIds.push(b.dataset.uset);routeProfileTagsToBookmark(p,values)}sug.classList.remove("open");el.value="";rerender()})};el.oninput=show;el.onfocus=show});
+  list.querySelectorAll(".char-editor").forEach(box=>{box.querySelectorAll('input[type=radio]').forEach(r=>r.onchange=()=>{const p=profile(box.dataset.pid);if(!p)return;const kind=r.name.startsWith("gender_")?"gender":"role";setProfileSemanticTag(p,kind,r.value);routeProfileTagsToBookmark(p,values);rerender()})})
+ };
+ document.querySelector(`[data-char-add="${inp.id}"]`).onclick=()=>{values[inp.id]=[...(values[inp.id]||[]),""];rerender()};bindBoxes();
+}
+function createCharacterProfile(name){
+ const pid=alloc("profile","r"),hh=state.tagHeads.find(h=>h.name==="character")||state.tagHeads[0],tid=alloc("tag","t");
+ state.tags.push({id:tid,headId:hh.id,name,linkedProfileId:pid});state.profiles.push({id:pid,kind:"character",name,representativeTagId:tid,tagIds:[],updatedAt:Date.now()});return pid;
+}
+function setProfileSemanticTag(p,headName,value){
+ const h=state.tagHeads.find(x=>x.name===headName);if(!h)return;p.tagIds=(p.tagIds||[]).filter(id=>tag(id)?.headId!==h.id);let t=state.tags.find(x=>x.headId===h.id&&x.name===value);if(!t){t={id:alloc("tag","t"),headId:h.id,name:value};state.tags.push(t)}p.tagIds.push(t.id)
+}
+function routeProfileTagsToBookmark(p,values){
+ const tagInputs=state.schema.fields.flatMap(f=>f.inputs).filter(i=>i.type==="tag");if(tagInputs[0])values[tagInputs[0].id]=[...new Set([...(values[tagInputs[0].id]||[]),...(p.tagIds||[])])];routeTags(values)
+}
+
+/* Override bookmark editor only for profile input rendering while retaining generic schema */
+const openBookmarkV301=openBookmark;
+openBookmark=function(id=null){
+ editingBookmark=id;const b=id?structuredClone(state.bookmarks.find(x=>x.id===id)):{id:null,folderId:null,categoryId:null,values:{}};
+ $("bookmarkModalTitle").textContent=id?"북마크 수정":"북마크 추가";$("deleteBookmark").classList.toggle("hidden",!id);
+ let html=`<div class="field"><label>폴더</label><select id="bmFolder"><option value="">없음</option>${state.folders.map(f=>`<option value="${f.id}" ${b.folderId===f.id?"selected":""}>${esc(f.name)}</option>`).join("")}</select></div><div class="field"><label>카테고리</label><select id="bmCategory"><option value="">없음</option>${state.categories.map(c=>`<option value="${c.id}" ${b.categoryId===c.id?"selected":""}>${esc(c.name)}</option>`).join("")}</select></div>`;
+ for(const f of state.schema.fields){html+=`<div class="field"><label>${esc(f.name)}</label>`;for(const i of f.inputs){const v=b.values[i.id];html+=`<div data-form-input="${i.id}" style="margin:6px 0"><div class="hint">${esc(i.name)}</div>`;if(i.type==="value"){if(i.format==="longtext")html+=`<textarea data-value="${i.id}">${esc(v||"")}</textarea>`;else if(i.format==="choice")html+=`<select data-value="${i.id}">${(i.choices||["page","video"]).map(x=>`<option ${v===x?"selected":""}>${esc(x)}</option>`).join("")}</select>`;else html+=`<input data-value="${i.id}" data-format="${i.format||"text"}" value="${esc(i.format==="duration"?formatValue(i,v||0):(v??""))}">`}else if(i.type==="tag")html+=tagPickerHTML("bm-"+i.id,v||[],i.allowedHeadIds||[],true);else if(i.type==="profile")html+=renderCharacterEditors(i,b.values);else if(i.type==="category")html+=`<select data-value="${i.id}">${state.categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select>`;html+=`</div>`}html+=`</div>`}
+ $("bookmarkForm").innerHTML=html;modal("bookmarkModal");const values=b.values;
+ document.querySelectorAll("[data-value]").forEach(el=>el.oninput=()=>{let v=el.value;if(el.dataset.format==="page"||el.dataset.format==="number")v=Number(v)||0;if(el.dataset.format==="duration"){const p=el.value.split(":").map(Number);v=p.length===3?p[0]*3600+p[1]*60+p[2]:p.length===2?p[0]*60+p[1]:Number(el.value)||0}values[el.dataset.value]=v;updateConditions(values)});
+ state.schema.fields.flatMap(f=>f.inputs).filter(i=>i.type==="tag").forEach(i=>bindTagPicker("bm-"+i.id,()=>values[i.id]||[],a=>values[i.id]=a,i.allowedHeadIds||[]));
+ state.schema.fields.flatMap(f=>f.inputs).filter(i=>i.type==="profile").forEach(i=>bindCharacterEditors(i,values));updateConditions(values);
+ $("saveBookmark").onclick=()=>{routeTags(values);b.folderId=$("bmFolder").value||null;b.categoryId=$("bmCategory").value||null;b.updatedAt=Date.now();if(id)state.bookmarks[state.bookmarks.findIndex(x=>x.id===id)]=b;else{b.id=alloc("bookmark","b");state.bookmarks.push(b)}persist();modal("bookmarkModal",false);render()};
+ $("deleteBookmark").onclick=()=>{if(confirm("삭제할까요?")){state.bookmarks=state.bookmarks.filter(x=>x.id!==id);persist();modal("bookmarkModal",false);render()}}
+}
+
+/* v3.02 bootstrap */
+ensureV302();persist();render();
+
 </script>
 
 </body></html>
