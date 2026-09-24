@@ -1,9 +1,17 @@
-# Tagmark v2.41
+# Tagmark v2.43
 
-- 탭 순서 변경을 상단 탭 바에서 제거하고 Page 편집 안의 `탭 순서` 영역으로 이동.
-- Page 편집에서 ≡ 드래그 또는 ↑/↓ 버튼으로 탭을 재정렬하고 Page 저장 시 `Page.tabs` 순서로 영구 저장.
-- Tag 탭의 사전 등록 Tag Head 후보를 그 탭의 `표시할 태그 머리` 설정으로 제한.
-- 사전 등록에서 선택한 Tag Head 체크 상태를 탭별로 저장해 태그 등록 후에도 유지.
-- Bookmark/Profile Field Editor 행의 grid 폭/overflow를 다시 정리해 iPad 폭에서 겹침을 방지.
-- Tag/Entity/Profile suggestion dropdown lifecycle을 통합: 새 목록을 열 때 이전 목록의 DOM 내용을 비우고 닫으며, 외부 클릭 시 모두 정리.
-- Suggest 목록 버튼은 한 컨테이너 안에서만 렌더되도록 CSS를 고정해 이전 결과가 뭉쳐 보이는 현상을 방지.
+## Page 기준 Import / Export
+- Main에서 백업/복원: 모든 Page를 내보냄.
+- 특정 Page에서 백업/복원: 현재 Page 하나만 내보냄.
+- 특정 Page에서 가져오기: 가져온 Page 데이터들을 현재 Page 안에 병합.
+- Main에서 가져오기: 백업의 Page들을 전체 DB에 추가/병합.
+- 초기화도 현재 위치에 맞춰 Main=전체 DB, Page=현재 Page로 동작.
+
+## 중복 검사
+가져오기 전에 중복 검사를 수행.
+- 모든 객체: 동일 ID 검사.
+- Bookmark: 동일 URL을 우선 중복으로 판정하고, URL이 없으면 정규화된 내용 비교.
+- Tag: 같은 Tag Head + 같은 이름.
+- Profile / Category / Folder: 같은 이름.
+- Tab: 같은 이름 + 같은 Tab type.
+- 중복은 건너뛰고 완료 메시지에 추가/중복 건수를 표시.
