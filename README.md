@@ -1,9 +1,18 @@
-# Tagmark v2.45
+# Tagmark v2.46
 
-- `태그 검색`, `프로필 검색`, `카테고리 검색`, `폴더 검색` 입력 방식을 고정 select/dropdown에서 텍스트 자동완성 검색 방식으로 변경.
-- 입력한 문자열에 맞는 연관 결과가 입력칸 바로 아래에 표시됨.
-- 결과를 누르면 선택 chip으로 추가되며 배열형 필드는 여러 항목 선택 가능.
-- 단일형 필드는 새 결과를 선택하면 기존 선택을 교체.
-- Enter로 첫 검색 결과 선택, Escape로 검색 결과 닫기 지원.
-- Profile Input 내부의 `태그 검색`도 동일한 텍스트 검색 + 연관 결과 방식으로 변경.
-- 기존 저장 데이터의 ID 구조는 유지하므로 기존 데이터와 호환.
+## Import/Restore 관계 보존 수정
+- 같은 Page ID의 Page 백업을 현재 Page 또는 Main에서 가져오면 개별 객체 병합을 하지 않고 Page 전체 스냅샷을 복원.
+- 따라서 Bookmark `data[fieldId]`와 Tab `schema[field.id]`의 연결이 끊어지지 않음.
+- 빈 동일 이름 Page에 Page 백업을 가져오는 경우도 전체 Page 구조를 복원.
+
+## 다른 Page를 현재 Page에 추가하는 경우
+- Tag Head, Tag, Category, Folder, Profile의 기존 항목을 먼저 중복 검사.
+- 기존 항목과 연결되는 source ID → destination ID mapping 생성.
+- 같은 종류/이름의 Tab은 기존 Tab에 연결하고 각 schema field를 `이름 + data type` 기준으로 대응.
+- 없는 field는 destination schema에 추가.
+- Bookmark data의 field ID key와 내부 참조 ID를 mapping 후 추가.
+- Bookmark는 동일 URL을 우선 중복으로 판정.
+- 동일 ID/Tag/프로필/카테고리/폴더 중복도 계속 검사.
+
+이 버전은 v2.43~v2.45의 객체별 단순 병합으로 발생할 수 있던 `기록` 카드 문제를 수정합니다.
+원본 백업 JSON에 정상 schema/data가 남아 있다면 해당 백업을 v2.46에서 다시 가져와 복원할 수 있습니다.
