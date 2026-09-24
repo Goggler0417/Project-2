@@ -1,21 +1,27 @@
-# Tagmark v2.52
+# Tagmark v3.00 Prototype
 
-## 긴급 수정: Character/Tag 검색 controller 복구
-v2.51의 renderer 통합 과정에서 Character renderer를 교체하면서
-`initBookmarkEditor`, `showSuggest`, `characterSuggest`, `entityTagSuggest`,
-`tagPickerSuggest` 등 검색/이벤트 controller 블록이 함께 제거되는 회귀가 발생했다.
+개발 모토:
+> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.
 
-v2.52에서는 v2.51의 공통 `structuredInputControl()` renderer는 유지하면서
-검색/이벤트 controller를 복구했다.
+## 이 프로토타입에 포함된 것
+- 완전히 새로 구성한 로컬 IndexedDB 기반 상태 저장
+- Page / Tab / Schema / Data 분리
+- Field = 표시 컨테이너, Input = 실제 데이터 단위
+- 값 / 태그 / 프로필 / 카테고리 정보 유형
+- 제목 / 항목 / 태그 / 메모 / 프로필 표시 유형
+- 한 Field 안의 복수 Input
+- 단순 조건부 Input
+- Page 값과 Duration(초 단위 저장)
+- Tag Head 및 공용 TagPicker
+- 표시 가능할 태그 머리 / 분배받을 태그 머리
+- 공용 Tag Router
+- Profile이 일반 대표 Tag를 자동 생성하는 구조
+- Character를 Profile의 한 종류로 처리
+- 등장인물 선택 입력과 별개의 '등장인물 태그 검색/입력' 영역
+- 구형 스타일의 Bookmark Card / Folder / Tag folder / Profile card
+- 짧은 Base36 ID allocator 구조
+- JSON 백업/가져오기
 
-### Character 하위 Tag Search
-- 입력칸 focus/input 이벤트가 다시 연결된다.
-- 검색 결과 dropdown이 다시 열린다.
-- 해당 하위 필드의 `allowedTagHeadIds`만 검색 범위로 사용한다.
-- 하위 필드에 Tag Head 제한이 없으면 모든 일반 Tag를 검색한다.
-- `tag.profileId`가 있는 Profile Tag는 일반 Tag 검색에서 제외한다.
-- Character/Profile 검색과 일반 Tag 검색은 서로 분리된다.
-
-### UI
-- 기존 Character 행 shell은 유지.
-- suggestion dropdown의 position/z-index/overflow를 보강해 modal/iPad 안에서 가려지지 않게 했다.
+## 프로토타입 범위
+v3.00은 새 아키텍처를 검증하기 위한 첫 프로토타입입니다. 구형의 모든 세부 기능을 완성한 버전은 아닙니다.
+브라우저 자동 상호작용 테스트는 수행하지 않았습니다.
