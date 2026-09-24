@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tagmark v3.02</title>
+<title>Tagmark v3.03</title>
 <style>
 :root{--bg:#f4f6fa;--panel:#fff;--line:#dfe3ea;--text:#1d2430;--muted:#758092;--primary:#2f6fed;--danger:#c53d4d;--shadow:0 8px 24px rgba(0,0,0,.08);--male:#3977c8;--female:#c65087;--both:#8a62bd}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:1180px;margin:auto;padding:0 12px 24px}
@@ -34,12 +34,18 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 .char-choice-panel{border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:0 0 8px}.char-choice-panel legend{font-size:11px;color:var(--muted)}
 .char-choice-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:4px 0}.char-choice-row label{display:flex;gap:4px;align-items:center}.char-choice-row input{width:auto}
 .char-input-wrap{position:relative;margin-top:7px}.char-suggest{display:none;position:absolute;left:0;right:0;top:100%;z-index:120;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);max-height:220px;overflow:auto}.char-suggest.open{display:block}.char-suggest button{width:100%;border:0;background:#fff;text-align:left;padding:8px;cursor:pointer}
+
+.profile-color-box{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafbfe}
+.profile-color-row{display:grid;grid-template-columns:minmax(120px,1fr) 64px;gap:8px;align-items:center;margin:6px 0}
+.profile-color-row input[type=color]{padding:2px;height:34px}
+.profile-rep-preview{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fafbfe;font-size:12px}
+.char-empty{padding:10px;border:1px dashed var(--line);border-radius:9px;color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
 <div class="app">
 <header>
- <div><div class="logo">Tagmark</div><div class="sub">v3.02 · Local Prototype</div></div>
+ <div><div class="logo">Tagmark</div><div class="sub">v3.03 · Local Prototype</div></div>
  <div class="toolbar"><button class="btn" id="mainSettingsBtn">메인 페이지 설정</button><button class="btn" id="pageSettingsBtn">페이지 설정</button><button class="btn" id="tabSettingsBtn">탭 설정</button><button class="btn" id="importBtn">가져오기</button><button class="btn" id="exportBtn">백업</button><button class="btn primary" id="addBtn">＋ 북마크</button></div>
 </header>
 <div class="motto"><b>개발 모토:</b> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.</div>
@@ -77,7 +83,7 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 <div class="hint">DB 데이터와 분리된 구성 정보입니다. Field는 표시 컨테이너이고, 실제 데이터 단위는 Input입니다.</div>
 <div class="field"><label>필드</label><div class="schema-list" id="schemaList"></div></div>
 <button class="btn" id="addField">＋ 필드 추가</button>
-<div class="field"><label>태그 머리</label><div id="headEditor"></div></div>
+<div class="field"><label>태그 머리</label><div id="headEditor"></div></div><div class="field"><label>프로필 표시 색상</label><div id="profileColorEditor"></div></div>
 <div class="modal-actions"><button class="btn" data-close="settingsModal">닫기</button><button class="btn primary" id="saveSettings">저장</button></div>
 </div></div>
 
@@ -125,7 +131,7 @@ const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g
 const DB_NAME="tagmark-v3", STORE="state"; let db=null, activeTab="bookmarks", editingBookmark=null, editingProfile=null, editingField=null, editingInput=null;
 const headColors=["#c65087","#3977c8","#8a62bd","#9a6b28","#2e8b72","#b24d3e","#596477","#1b7f9e"];
 const fresh=()=>({
- version:"3.02", ids:{bookmark:{next:3,free:[]},tag:{next:12,free:[]},profile:{next:3,free:[]},folder:{next:2,free:[]},category:{next:4,free:[]},field:{next:8,free:[]},input:{next:10,free:[]},head:{next:8,free:[]}},
+ version:"3.03", ids:{bookmark:{next:3,free:[]},tag:{next:12,free:[]},profile:{next:3,free:[]},folder:{next:2,free:[]},category:{next:4,free:[]},field:{next:8,free:[]},input:{next:10,free:[]},head:{next:8,free:[]}},
  page:{id:"p1",name:"기본 페이지",tabs:[{id:"bookmarks",type:"bookmark",name:"북마크"},{id:"tags",type:"tag",name:"태그"},{id:"profiles",type:"profile",name:"등장인물"},{id:"categories",type:"category",name:"카테고리"}]},
  tagHeads:[
   {id:"h1",name:"artist",color:"#9a6b28"},{id:"h2",name:"series",color:"#8a62bd"},{id:"h3",name:"language",color:"#2e8b72"},{id:"h4",name:"character",color:"#3977c8"},{id:"h5",name:"gender",color:"#c65087"},{id:"h6",name:"role",color:"#b24d3e"},{id:"h7",name:"tag",color:"#596477"}],
@@ -149,7 +155,7 @@ const fresh=()=>({
   {id:"f7",name:"메모",display:"memo",visible:true,inputs:[{id:"ia",name:"메모",type:"value",format:"longtext",condition:{mode:"always"}}]}
  ]},
  bookmarks:[
-  {id:"b1",folderId:"d1",categoryId:"c1",values:{i1:"예시 북마크",i2:"https://example.com",i3:["t2"],i4:["t1"],i5:"page",i6:120,i8:["r1"],i9:["t3","t4"],ia:"v3.02 프로토타입 예시입니다."}},
+  {id:"b1",folderId:"d1",categoryId:"c1",values:{i1:"예시 북마크",i2:"https://example.com",i3:["t2"],i4:["t1"],i5:"page",i6:120,i8:["r1"],i9:["t3","t4"],ia:"v3.03 프로토타입 예시입니다."}},
   {id:"b2",folderId:null,categoryId:"c2",values:{i1:"영상 예시",i2:"https://example.com/video",i3:["t2"],i5:"video",i7:5535,i8:["r2"],i9:["tb"]}}
  ]});
 let state=fresh();
@@ -273,7 +279,7 @@ function renderInputTypeBoxes(i){const t=$("inputType").value;$("valueFormatBox"
 $("saveInput").onclick=()=>{const f=state.schema.fields.find(x=>x.id===editingField),i=f.inputs.find(x=>x.id===editingInput);i.name=$("inputName").value.trim()||i.name;i.type=$("inputType").value;if(i.type==="value")i.format=$("inputFormat").value;else delete i.format;if(i.type==="tag"){i.allowedHeadIds=[...$("allowedHeads").querySelectorAll("input:checked")].map(x=>x.value);i.routeHeadIds=[...$("routeHeads").querySelectorAll("input:checked")].map(x=>x.value).filter(x=>i.allowedHeadIds.includes(x))}if(i.type==="profile")i.profileKind=$("inputProfileKind").value;i.condition=$("conditionMode").value==="always"?{mode:"always"}:{mode:"equals",inputId:$("conditionInput").value,value:$("conditionValue").value};persist();modal("inputModal",false);renderFieldInputs(f)}
 $("deleteInput").onclick=()=>{const f=state.schema.fields.find(x=>x.id===editingField);if(confirm("입력칸을 삭제할까요?")){f.inputs=f.inputs.filter(x=>x.id!==editingInput);persist();modal("inputModal",false);renderFieldInputs(f)}}
 
-$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tagmark-v3.02-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tagmark-v3.03-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x.page||!x.schema||!x.tags)throw Error("형식 오류");if(confirm("현재 프로토타입 데이터를 가져온 백업으로 교체할까요?")){state=x;persist();render()}}catch(err){alert("가져오기 실패: "+err.message)}e.target.value=""}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open,.search-suggest.open").forEach(x=>x.classList.remove("open"))});
 document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target.closest(".search-wrap"))document.querySelectorAll(".search-suggest.open").forEach(x=>x.classList.remove("open"))});
@@ -282,7 +288,7 @@ document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target
 </script>
 
 <style>
-/* v3.02 common tab toolbar + layouts */
+/* v3.03 common tab toolbar + layouts */
 .panel{min-height:0;overflow:visible}
 .controls{top:96px;display:block;padding:7px 8px;background:#fff}
 .common-tools{display:grid;grid-template-columns:minmax(190px,1fr) minmax(130px,190px) auto auto auto auto;gap:6px;align-items:center}
@@ -299,10 +305,10 @@ document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target
 @media(max-width:760px){.common-tools{grid-template-columns:minmax(0,1fr) auto auto auto}.common-tools .search-wrap{grid-column:1/-1}.common-tools .sort-select{grid-column:1/3}.tab-config-row{grid-template-columns:auto 1fr auto}.tab-config-row .tab-type{grid-column:2/3}.tab-config-detail{grid-column:1/-1}.controls{top:91px}}
 </style>
 <script>
-/* v3.02 interaction layer. Data facts remain in data arrays; configuration stays in page/schema/ui. */
+/* v3.03 interaction layer. Data facts remain in data arrays; configuration stays in page/schema/ui. */
 let uiState={};
 function ensureV301(){
- state.version="3.02";
+ state.version="3.03";
  state.page.ui=state.page.ui||{};
  state.page.ui.tabs=state.page.ui.tabs||{};
  state.page.tabs.forEach(t=>{t.visibleTagHeadIds=t.visibleTagHeadIds||[];if(t.type==="profile"&&!t.profileKind)t.profileKind="character"});
@@ -376,7 +382,7 @@ const oldOpenProfile=openProfile;openProfile=function(id=null){oldOpenProfile(id
 
 ensureV301();persist();render();
 
-/* ========================= v3.02 clean hierarchy / navigation fixes ========================= */
+/* ========================= v3.03 clean hierarchy / navigation fixes ========================= */
 function cloneDefaultPage(name,id){
  const base=fresh();
  const p={
@@ -410,7 +416,7 @@ function ensureV302(){
  if(!state.main.pages?.length)state.main.pages=[cloneDefaultPage("기본 페이지","p1")];
  let cur=state.main.pages.find(p=>p.id===state.main.activePageId)||state.main.pages[0];
  state.main.activePageId=cur.id; applyPage(cur);
- state.version="3.02";
+ state.version="3.03";
 }
 function commitPage(){
  if(!state.main)return;
@@ -541,8 +547,160 @@ openBookmark=function(id=null){
  $("deleteBookmark").onclick=()=>{if(confirm("삭제할까요?")){state.bookmarks=state.bookmarks.filter(x=>x.id!==id);persist();modal("bookmarkModal",false);render()}}
 }
 
-/* v3.02 bootstrap */
+/* v3.03 bootstrap */
 ensureV302();persist();render();
+
+
+/* ========================= v3.03 profile/character repair ========================= */
+function ensureV303(){
+ ensureV302();
+ state.version="3.03";
+ state.schema=state.schema||{fields:[]};
+ state.schema.profileDisplay=state.schema.profileDisplay||{colorHeadId:(state.tagHeads.find(h=>h.name==="gender")?.id||""),colors:{}};
+ const pd=state.schema.profileDisplay;
+ pd.colors=pd.colors||{};
+ // Existing data may have lost the Character/Profile field. Repair schema only,
+ // without touching bookmark facts.
+ const hasProfile=state.schema.fields.some(f=>(f.inputs||[]).some(i=>i.type==="profile"));
+ if(!hasProfile){
+   const fid=alloc("field","f"),iid=alloc("input","i");
+   const tagIndex=state.schema.fields.findIndex(f=>f.display==="tag");
+   const field={id:fid,name:"등장인물",display:"profile",visible:true,inputs:[{id:iid,name:"등장인물",type:"profile",profileKind:"character",condition:{mode:"always"}}]};
+   if(tagIndex>=0)state.schema.fields.splice(tagIndex,0,field); else state.schema.fields.push(field);
+ }
+}
+function profileDisplayColor(p){
+ const cfg=state.schema?.profileDisplay||{},hid=cfg.colorHeadId;
+ if(!hid||!p)return "";
+ const t=(p.tagIds||[]).map(tag).find(x=>x?.headId===hid);
+ return t?(cfg.colors?.[t.id]||cfg.colors?.[t.name]||""):"";
+}
+function renderProfileColorEditor(){
+ const host=$("profileColorEditor");if(!host)return;
+ const cfg=state.schema.profileDisplay||{colorHeadId:"",colors:{}};
+ const h=head(cfg.colorHeadId);
+ const choices=h?state.tags.filter(t=>t.headId===h.id):[];
+ host.innerHTML=`<div class="profile-color-box">
+   <div class="hint">프로필을 「프로필/등장인물」 표시유형으로 나타낼 때, 선택된 태그 값마다 이름 색상을 지정합니다. 데이터가 아니라 Schema의 표시 규칙입니다.</div>
+   <div class="field"><label>색상을 결정할 태그 머리</label><select id="profileColorHead"><option value="">사용 안 함</option>${state.tagHeads.map(x=>`<option value="${x.id}" ${x.id===cfg.colorHeadId?'selected':''}>${esc(x.name)}</option>`).join("")}</select></div>
+   <div id="profileColorChoices">${choices.map(t=>`<div class="profile-color-row"><span>${tagChip(t.id)}</span><input type="color" data-profile-color="${t.id}" value="${cfg.colors?.[t.id]||"#334155"}"></div>`).join("")||'<div class="hint">이 태그 머리에 등록된 선택값이 없습니다.</div>'}</div>
+ </div>`;
+ $("profileColorHead").onchange=()=>{state.schema.profileDisplay.colorHeadId=$("profileColorHead").value;renderProfileColorEditor()};
+ host.querySelectorAll("[data-profile-color]").forEach(x=>x.oninput=()=>{state.schema.profileDisplay.colors[x.dataset.profileColor]=x.value});
+}
+function bookmarkTagUsage(tid){
+ let count=0;
+ for(const b of state.bookmarks){
+   // allBookmarkTagIds() already deduplicates within one bookmark, including tags
+   // inherited through Profile inputs.
+   if(new Set(allBookmarkTagIds(b)).has(tid))count++;
+ }
+ return count;
+}
+function tagChipWithBookmarkCount(id){
+ const t=tag(id),h=head(t?.headId);if(!t||!h)return "";
+ return `<span class="tb" style="color:${h.color}">${esc(h.name)}:${esc(t.name)} <span class="cnt">${bookmarkTagUsage(id)}</span></span>`;
+}
+
+/* Profile display: visual color is schema-driven, not hard-coded gender CSS. */
+renderProfileDisplay=function(p){
+ if(!p)return "";
+ const c=profileDisplayColor(p);
+ return `<div class="profile-display"><div class="profile-line"><button class="profile-name" style="${c?`color:${c}`:""}" data-profile-open="${esc(p.id)}">${esc(p.name)}</button></div><div class="profile-details chips">${(p.tagIds||[]).map(id=>tagChip(id)).join("")}</div></div>`;
+};
+
+/* Tag tab count = number of bookmarks containing the tag, max 1 count per bookmark. */
+const renderTagsV302=renderTags;
+renderTags=function(){
+ const t=currentTab(),u=tabUI();$("controls").innerHTML=commonControls("tag",`<button class="btn primary sm" id="newTagBtn">＋ 태그</button>`);
+ const draw=()=>{const q=(u.search||"").toLowerCase(),allowed=t.visibleTagHeadIds?.length?new Set(t.visibleTagHeadIds):null;let ts=state.tags.filter(x=>(!allowed||allowed.has(x.headId))&&tagLabel(x.id).toLowerCase().includes(q));ts=sortItems(ts,"tag",(x,k)=>k==="title"?x.name:k==="head"?(head(x.headId)?.name||""):k==="updated"?(x.updatedAt||0):k.startsWith("head:")?(x.headId===k.slice(5)?x.name:""):"");const ids=ts.map(x=>x.id),sel=selectedSet();const hs=state.tagHeads.filter(h=>!allowed||allowed.has(h.id));$("content").innerHTML=`<div class="tag-results ${u.layout}">${hs.map(h=>{const sub=ts.filter(x=>x.headId===h.id);return `<details class="tag-folder" open><summary><span style="color:${h.color}">${esc(h.name)}</span><span class="meta">${sub.length}</span></summary><div class="content"><div class="chips">${sub.map(x=>`<span class="selectable-row">${u.select?`<input class="select-box" type="checkbox" data-select-id="${x.id}" ${sel.has(x.id)?'checked':''}>`:''}${tagChipWithBookmarkCount(x.id)}</span>`).join("")||'<span class="meta">태그 없음</span>'}</div></div></details>`}).join("")}</div>`;bindSelectBoxes(draw);return ids};
+ let visible=draw();bindCommon("tag",()=>visible=draw(),()=>visible,ids=>{state.tags=state.tags.filter(x=>!ids.includes(x.id));state.bookmarks.forEach(b=>Object.keys(b.values||{}).forEach(k=>{if(Array.isArray(b.values[k]))b.values[k]=b.values[k].filter(x=>!ids.includes(x))}));state.profiles.forEach(p=>p.tagIds=(p.tagIds||[]).filter(x=>!ids.includes(x)))});$("newTagBtn").onclick=openTagModal
+};
+
+/* Profile tab: editable again, with schema-driven name color and normal tag editing. */
+renderProfiles=function(){
+ const t=currentTab(),u=tabUI();$("controls").innerHTML=commonControls("profile",`<button class="btn primary sm" id="newProfileBtn">＋ 프로필</button>`);
+ const draw=()=>{const q=(u.search||"").toLowerCase();let ps=state.profiles.filter(p=>(!t.profileKind||t.profileKind==='all'||p.kind===t.profileKind)&&(p.name.toLowerCase().includes(q)||(p.tagIds||[]).some(id=>tagLabel(id).toLowerCase().includes(q))));ps=sortItems(ps,"profile",(p,k)=>k==="title"?p.name:k==="updated"?(p.updatedAt||0):k.startsWith("head:")?((p.tagIds||[]).map(tag).filter(x=>x?.headId===k.slice(5)).map(x=>x.name).sort()[0]||""):"");const ids=ps.map(p=>p.id),sel=selectedSet();$("content").innerHTML=`<div class="profile-grid ${u.layout}">${ps.map(p=>{const c=profileDisplayColor(p);return `<div class="profile-card"><div class="selectable-row">${u.select?`<input class="select-box" type="checkbox" data-select-id="${p.id}" ${sel.has(p.id)?'checked':''}>`:''}<div class="grow"><div class="profile-card-title" style="${c?`color:${c}`:""}">${esc(p.name)}</div><div class="profile-card-line"><span class="profile-label">일반 태그</span><div class="chips">${(p.tagIds||[]).map(id=>tagChip(id)).join("")||'<span class="meta">없음</span>'}</div></div><div class="actions"><button class="btn sm" data-profile-edit="${p.id}">수정</button></div></div></div></div>`}).join("")||'<div class="empty">프로필이 없습니다.</div>'}</div>`;document.querySelectorAll("[data-profile-edit]").forEach(b=>b.onclick=()=>openProfile(b.dataset.profileEdit));bindSelectBoxes(draw);return ids};
+ let visible=draw();bindCommon("profile",()=>visible=draw(),()=>visible,ids=>{for(const id of ids){const p=profile(id);if(p)state.tags=state.tags.filter(t=>t.id!==p.representativeTagId)}state.profiles=state.profiles.filter(p=>!ids.includes(p.id));state.bookmarks.forEach(b=>Object.keys(b.values||{}).forEach(k=>{if(Array.isArray(b.values[k]))b.values[k]=b.values[k].filter(x=>!ids.includes(x))}))});$("newProfileBtn").onclick=()=>openProfile()
+};
+
+/* Robust Profile editor. The profile's generated ordinary tag remains automatic;
+   there is no separate user-facing "profile tag" concept. */
+openProfile=function(id=null){
+ editingProfile=id;
+ const p=id?structuredClone(profile(id)):{id:null,kind:(currentTab()?.profileKind&&currentTab().profileKind!=="all"?currentTab().profileKind:"character"),name:"",representativeTagId:null,tagIds:[],updatedAt:0};
+ $("profileModalTitle").textContent=id?"프로필 수정":"프로필 추가";
+ $("profileName").value=p.name||"";
+ const kinds=[...new Set(["character","artist","author",...state.page.tabs.filter(t=>t.type==="profile"&&t.profileKind&&t.profileKind!=="all").map(t=>t.profileKind)])];
+ $("profileKind").innerHTML=kinds.map(k=>`<option value="${esc(k)}" ${p.kind===k?'selected':''}>${esc(k)}</option>`).join("");
+ $("deleteProfile").classList.toggle("hidden",!id);
+
+ // Keep the old convenience cycle for gender, but it edits an ordinary tag.
+ const gh=state.tagHeads.find(h=>h.name==="gender");
+ let gender=(p.tagIds||[]).map(tag).find(t=>t?.headId===gh?.id)?.name||"";
+ const genderTags=gh?state.tags.filter(t=>t.headId===gh.id).map(t=>t.name):[];
+ const genders=["",...new Set(genderTags.length?genderTags:["female","male","both"])];
+ const drawGender=()=>{$("genderCycle").textContent=gender||"미지정";const gt=gh&&state.tags.find(t=>t.headId===gh.id&&t.name===gender);const c=gt?(state.schema.profileDisplay?.colors?.[gt.id]||""):"";$("genderCycle").style.color=c||""};
+ drawGender();
+ $("genderCycle").onclick=()=>{gender=genders[(genders.indexOf(gender)+1)%genders.length];drawGender()};
+
+ const allowed=state.tagHeads.filter(h=>h.id!==gh?.id&&h.name!=="character").map(h=>h.id);
+ $("profileTagPicker").innerHTML=`<div class="profile-rep-preview">이름을 저장하면 해당 Profile과 연결된 <b>일반 태그</b>가 자동 생성/갱신됩니다.</div>`+tagPickerHTML("profile",p.tagIds||[],allowed,true);
+ bindTagPicker("profile",()=>p.tagIds||[],a=>p.tagIds=a,allowed);
+
+ $("saveProfile").onclick=()=>{
+   p.name=$("profileName").value.trim();p.kind=$("profileKind").value;p.updatedAt=Date.now();
+   if(!p.name)return alert("이름을 입력하세요.");
+   let hh=state.tagHeads.find(h=>h.name===p.kind)||state.tagHeads.find(h=>h.name==="character")||state.tagHeads[0];
+   if(!hh)return alert("태그 머리가 하나 이상 필요합니다.");
+   let rep=p.representativeTagId?tag(p.representativeTagId):null;
+   if(!rep){rep={id:alloc("tag","t"),headId:hh.id,name:p.name,updatedAt:Date.now()};state.tags.push(rep);p.representativeTagId=rep.id}
+   else{rep.name=p.name;rep.headId=hh.id;rep.updatedAt=Date.now()}
+   p.tagIds=(p.tagIds||[]).filter(tid=>tag(tid)?.headId!==gh?.id);
+   if(gender&&gh){
+     let gt=state.tags.find(t=>t.headId===gh.id&&t.name===gender);
+     if(!gt){gt={id:alloc("tag","t"),headId:gh.id,name:gender,updatedAt:Date.now()};state.tags.push(gt)}
+     p.tagIds.push(gt.id);
+   }
+   if(id){state.profiles[state.profiles.findIndex(x=>x.id===id)]=p;rep.linkedProfileId=id}
+   else{p.id=alloc("profile","r");rep.linkedProfileId=p.id;state.profiles.push(p)}
+   persist();modal("profileModal",false);render();
+ };
+ $("deleteProfile").onclick=()=>{
+   if(!id||!confirm("프로필과 자동 생성된 일반 태그를 삭제할까요?"))return;
+   const rid=p.representativeTagId;
+   state.profiles=state.profiles.filter(x=>x.id!==id);state.tags=state.tags.filter(t=>t.id!==rid);
+   state.bookmarks.forEach(b=>Object.keys(b.values||{}).forEach(k=>{if(Array.isArray(b.values[k]))b.values[k]=b.values[k].filter(x=>x!==id&&x!==rid)}));
+   persist();modal("profileModal",false);render();
+ };
+ modal("profileModal");
+};
+
+/* Old-style repeated Character/Cast input is always present for profile-type fields. */
+renderCharacterEditors=function(inp,values){
+ const ids=Array.isArray(values[inp.id])?values[inp.id]:[];
+ return `<div data-char-list="${inp.id}">${ids.length?ids.map((pid,n)=>characterBox(inp.id,pid,n)).join(""):'<div class="char-empty">등록된 등장인물이 없습니다.</div>'}</div><button type="button" class="btn primary" data-char-add="${inp.id}" style="width:100%;margin-top:8px">Add Character/Cast</button>`;
+};
+bindCharacterEditors=function(inp,values){
+ const list=document.querySelector(`[data-char-list="${inp.id}"]`),add=document.querySelector(`[data-char-add="${inp.id}"]`);if(!list||!add)return;
+ const rerender=()=>{const ids=Array.isArray(values[inp.id])?values[inp.id]:[];list.innerHTML=ids.length?ids.map((pid,n)=>characterBox(inp.id,pid,n)).join(""):'<div class="char-empty">등록된 등장인물이 없습니다.</div>';bindBoxes()};
+ const bindBoxes=()=>{
+  list.querySelectorAll(`[data-char-remove="${inp.id}"]`).forEach(b=>b.onclick=()=>{values[inp.id]=(values[inp.id]||[]).filter(x=>x!==b.dataset.pid);rerender()});
+  list.querySelectorAll(`[data-char-name="${inp.id}"]`).forEach(el=>{const sug=el.nextElementSibling;const show=()=>{const q=el.value.trim().toLowerCase();const ps=state.profiles.filter(p=>(!inp.profileKind||p.kind===inp.profileKind)&&(!q||p.name.toLowerCase().includes(q)));sug.innerHTML=ps.map(p=>`<button type="button" data-usep="${p.id}">${esc(p.name)}</button>`).join("")+(el.value.trim()?`<button type="button" data-newp="1">＋ "${esc(el.value.trim())}" 새 등장인물</button>`:"");sug.classList.add("open");sug.querySelectorAll("[data-usep]").forEach(b=>b.onclick=()=>{const old=el.dataset.pid;values[inp.id]=(values[inp.id]||[]).map(x=>x===old?b.dataset.usep:x);const p=profile(b.dataset.usep);if(p)routeProfileTagsToBookmark(p,values);rerender()});const nb=sug.querySelector("[data-newp]");if(nb)nb.onclick=()=>{const name=el.value.trim();if(!name)return;const pid=createCharacterProfile(name);const old=el.dataset.pid;values[inp.id]=old?(values[inp.id]||[]).map(x=>x===old?pid:x):[...(values[inp.id]||[]),pid];rerender()}};el.oninput=show;el.onfocus=show});
+  list.querySelectorAll(`[data-char-tag-search="${inp.id}"]`).forEach(el=>{const sug=el.nextElementSibling;const show=()=>{const q=el.value.trim().toLowerCase(),pid=el.dataset.pid;const ts=state.tags.filter(t=>t.id!==profile(pid)?.representativeTagId&&(!q||tagLabel(t.id).toLowerCase().includes(q))).slice(0,30);sug.innerHTML=ts.map(t=>`<button type="button" data-uset="${t.id}">${tagChip(t.id)}</button>`).join("");sug.classList.add("open");sug.querySelectorAll("[data-uset]").forEach(b=>b.onclick=()=>{const p=profile(pid);if(p&&!p.tagIds.includes(b.dataset.uset)){p.tagIds.push(b.dataset.uset);p.updatedAt=Date.now();routeProfileTagsToBookmark(p,values)}sug.classList.remove("open");el.value="";rerender()})};el.oninput=show;el.onfocus=show});
+  list.querySelectorAll(".char-editor").forEach(box=>box.querySelectorAll('input[type=radio]').forEach(r=>r.onchange=()=>{const p=profile(box.dataset.pid);if(!p)return;const kind=r.name.startsWith("gender_")?"gender":"role";setProfileSemanticTag(p,kind,r.value);p.updatedAt=Date.now();routeProfileTagsToBookmark(p,values);rerender()}));
+ };
+ add.onclick=()=>{values[inp.id]=[...(values[inp.id]||[]),""];rerender()};bindBoxes();
+};
+
+/* Settings integration */
+const openTabSettingsV302=openTabSettings;
+openTabSettings=function(){ensureV303();renderSchemaList();renderHeadEditorV302();renderProfileColorEditor();const old=$("pageTabEditor");if(old)old.remove();modal("settingsModal")};
+const saveSettingsV302=$("saveSettings").onclick;
+$("saveSettings").onclick=()=>{persist();modal("settingsModal",false);render()};
+
+/* bootstrap/migration */
+ensureV303();persist();render();
 
 </script>
 

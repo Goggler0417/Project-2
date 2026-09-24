@@ -1,23 +1,26 @@
-# Tagmark v3.02
+# Tagmark v3.03
 
 개발 모토: **DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.**
 
-## v3.02 핵심 수정
-- `메인 페이지 → 페이지 → 탭` 3단계 구조 추가
-- 페이지 전환 UI 추가. Page마다 Tabs / Schema / Data가 독립
-- 탭 이동 시 Bookmark가 Tag 탭으로 바뀌던 navigation selector 충돌 수정
-- Page 설정에서 Field/Schema 설정 제거
-- Main Page 설정: Page 생성/삭제/이름/순서
-- Page 설정: Page 이름 및 Tab 생성/삭제/이름/순서
-- Tab 설정: 현재 Tab의 Schema/Field 및 Tag Head 관리
-- Tag Head 이름/색상 수정, 추가, 삭제, 순서 변경
-- Bookmark의 등장인물 입력을 구형 구조에 가깝게 변경:
+## v3.03
+- 기존 데이터에서 Profile/등장인물 입력 필드가 사라졌다면 Schema를 자동 복구
+- 북마크 편집기의 구형식 Character/Cast 반복 입력 복구
   - Character/Cast
   - 성별
-  - 이름/기존 Profile 검색
-  - 별도 등장인물 태그 검색/입력
-  - Add Character/Cast 버튼
-- 기존 공통 검색/정렬/오름·내림/목록·그리드/선택 구조 유지
+  - 기존 Profile 검색 / 새 등장인물 생성
+  - 등장인물 전용 일반 태그 검색
+  - 여러 등장인물 추가/삭제
+- Profile 탭에서 Profile 수정/삭제 및 일반 태그 편집 복구
+- Profile 이름과 연결된 일반 태그는 자동 생성/갱신
+- Profile 표시 색상 규칙을 Schema 설정으로 추가
+  - 색상 기준 Tag Head 선택
+  - 해당 Tag Head의 각 Tag 값마다 색상 선택
+  - Profile/등장인물 이름 표시 시 적용
+- Tag 사용량은 Bookmark 단위로 계산
+  - 같은 Bookmark 안에서 동일 Tag가 여러 경로/여러 번 등장해도 1회
+  - Profile을 통해 들어온 Tag도 해당 Bookmark에 존재하는 Tag로 계산
+- Tag 탭 TagChip에 Bookmark 기준 사용량 표시
 
 ## 검증
-정적 JavaScript 문법 검사를 수행합니다. 실제 브라우저/iPad 자동 상호작용 테스트는 수행하지 않았습니다.
+JavaScript 정적 문법 검사를 수행했습니다.
+실제 브라우저/iPad 자동 상호작용 테스트는 수행하지 않았습니다.
