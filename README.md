@@ -1,22 +1,21 @@
-# Tagmark v2.51
+# Tagmark v2.52
 
-## 입력 Renderer 통합
-- Character 내부 일반 필드와 Profile Input 내부 필드가 같은 `structuredInputControl()`을 사용한다.
-- Text / Long Text / Tag Search / Radio / Checkbox / Dropdown / Cycle Button / Toggle / Number / Date / URL / Color가 동일한 규칙으로 렌더링된다.
-- Character의 바깥 행 UI, 추가/복사/선택 구조는 유지했다.
+## 긴급 수정: Character/Tag 검색 controller 복구
+v2.51의 renderer 통합 과정에서 Character renderer를 교체하면서
+`initBookmarkEditor`, `showSuggest`, `characterSuggest`, `entityTagSuggest`,
+`tagPickerSuggest` 등 검색/이벤트 controller 블록이 함께 제거되는 회귀가 발생했다.
 
-## 필드 수정 반영
-- Character 내부 필드의 Input Type 변경이 실제 입력 UI에 바로 반영된다.
-- `태그 검색`으로 바꾸면 공통 Tag 검색 동작을 사용하고 해당 하위 필드의 `allowedTagHeadIds`만 참조한다.
-- Dropdown/Checkbox/Radio/Cycle Button의 선택지를 Character 필드 설정에서 저장하도록 수정했다.
-- 저장 시 각 Input Type에 맞는 값 읽기 로직도 통합했다.
+v2.52에서는 v2.51의 공통 `structuredInputControl()` renderer는 유지하면서
+검색/이벤트 controller를 복구했다.
 
-## Tag 검색/표시 수정
-- Character의 일반 Tag 검색은 Profile/Character Tag를 일반 태그 후보로 사용하지 않는다.
-- 하위 필드별 Tag Head 설정을 독립적으로 사용한다.
-- `.tb` 공통 Tag box의 × 삭제가 작동하지 않던 selector 오류를 수정했다.
+### Character 하위 Tag Search
+- 입력칸 focus/input 이벤트가 다시 연결된다.
+- 검색 결과 dropdown이 다시 열린다.
+- 해당 하위 필드의 `allowedTagHeadIds`만 검색 범위로 사용한다.
+- 하위 필드에 Tag Head 제한이 없으면 모든 일반 Tag를 검색한다.
+- `tag.profileId`가 있는 Profile Tag는 일반 Tag 검색에서 제외한다.
+- Character/Profile 검색과 일반 Tag 검색은 서로 분리된다.
 
-## 자동 분배
-- v2.50의 Tag Head 기반 Bookmark/Character 자동 분배는 유지한다.
-- 일반 Tag에 섞인 항목형 Tag는 현재 Field의 `allowedTagHeadIds`에 따라 수정창에서 해당 필드로 복원된다.
-- Profile 선택 시 Profile의 Tag도 Character 내부의 일치하는 Tag 필드로 분배된다.
+### UI
+- 기존 Character 행 shell은 유지.
+- suggestion dropdown의 position/z-index/overflow를 보강해 modal/iPad 안에서 가려지지 않게 했다.
