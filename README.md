@@ -1,27 +1,21 @@
-# Tagmark v3.00 Prototype
+# Tagmark v3.01 Prototype
 
-개발 모토:
-> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.
+개발 모토: **DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.**
 
-## 이 프로토타입에 포함된 것
-- 완전히 새로 구성한 로컬 IndexedDB 기반 상태 저장
-- Page / Tab / Schema / Data 분리
-- Field = 표시 컨테이너, Input = 실제 데이터 단위
-- 값 / 태그 / 프로필 / 카테고리 정보 유형
-- 제목 / 항목 / 태그 / 메모 / 프로필 표시 유형
-- 한 Field 안의 복수 Input
-- 단순 조건부 Input
-- Page 값과 Duration(초 단위 저장)
-- Tag Head 및 공용 TagPicker
-- 표시 가능할 태그 머리 / 분배받을 태그 머리
-- 공용 Tag Router
-- Profile이 일반 대표 Tag를 자동 생성하는 구조
-- Character를 Profile의 한 종류로 처리
-- 등장인물 선택 입력과 별개의 '등장인물 태그 검색/입력' 영역
-- 구형 스타일의 Bookmark Card / Folder / Tag folder / Profile card
-- 짧은 Base36 ID allocator 구조
-- JSON 백업/가져오기
+## v3.01 변경
+- v3.00의 공통 제어영역 배치 문제 수정
+- 모든 탭에 공용 검색/정렬/정렬방향/목록·그리드/선택 UI 추가
+- 정렬 기준: 제목/카테고리/최근 수정/각 Tag Head 등(탭 유형에 맞게 제공)
+- 오름차순↔내림차순, 목록↔그리드 순환 버튼
+- 선택 모드, 전체 선택, 선택 해제, 일괄 삭제
+- Bookmark/Tag/Profile/Category 렌더러를 탭 유형별로 명시적으로 분리하여 탭 내용 누수 방지
+- Page 이름 및 Tab 이름/유형/순서/추가/삭제 설정
+- Bookmark Tab 페이지당 1개 제한
+- Tag Tab별 표시 Tag Head 설정
+- Profile Tab별 Profile 종류 설정
+- 검색/정렬/레이아웃/선택 상태를 tabId별로 독립 저장
+- 실제 레코드 수정 시 updatedAt 기록
+- v3.00 IndexedDB 데이터의 기본 마이그레이션 유지
 
-## 프로토타입 범위
-v3.00은 새 아키텍처를 검증하기 위한 첫 프로토타입입니다. 구형의 모든 세부 기능을 완성한 버전은 아닙니다.
-브라우저 자동 상호작용 테스트는 수행하지 않았습니다.
+## 검증
+정적 JS 문법 검사, 중복 ZIP 경로/버전 문자열 검사를 수행했습니다. 브라우저 자동 상호작용 테스트는 수행하지 않았습니다.
