@@ -1,19 +1,20 @@
-# Tagmark v2.49
+# Tagmark v2.50
 
-## Character/Profile 검색 수정
-- v2.44에서 modal stack을 도입하면서 modal id가 `modal-1`, `modal-2` 형태로 바뀌었지만,
-  Bookmark/Character 초기화 코드는 계속 `#modal`만 찾고 있었음.
-- 그 결과 Character 이름 입력칸에 `input`/`focus` 검색 이벤트가 실제로 연결되지 않았음.
-- 현재 최상위 modal을 찾아 초기화하도록 수정.
+## Tag Head 기반 자동 분배
+- Bookmark 수정창을 열 때 일반 Tag 필드에 섞여 있는 Tag를 검사한다.
+- Tag의 `tagHeadId`가 특정 Tag 입력 필드의 `allowedTagHeadIds`와 일치하면 해당 항목 필드로 자동 배치한다.
+- 저장 시에도 같은 분배를 한 번 더 적용한다.
+- 따라서 구형 DB처럼 Series/Artist/Language 등 '항목으로 표시되는 Tag'가 일반 Tag에 남아 있어도 해당 항목으로 복원된다.
+- 엔진은 Series/Artist 같은 이름을 하드코딩하지 않고 Field의 Tag Head 설정만 사용한다.
 
-## 기존/가져온 Profile 호환
-- Profile 이름 검색을 `profile.name` 하나에 의존하지 않고 연결된 Profile 탭의
-  `profile_title`/이름 필드에서 직접 읽음.
-- 정식 관계 `Tag.profileId = Profile.id`와 Profile 탭의 `profileTagHeadId`를 우선 사용.
-- 오래된/가져온 데이터에서 Profile Tag 또는 Tag Head 연결이 일부 누락된 경우에도,
-  연결된 Profile 탭의 이름 필드가 존재하면 검색 후보에서 사라지지 않도록 fallback 추가.
-- Character와 새 Profile Input 검색 양쪽에 동일하게 적용.
+## Character/Profile Tag 자동 분배
+- Character Profile 선택 시 그 Profile이 가진 Tag들을 읽는다.
+- Character 내부 각 `tag_search` 필드의 `allowedTagHeadIds`와 비교해 일치하는 필드에 자동 입력한다.
+- 기존 Bookmark를 수정할 때 Character의 일반 `tags`에 섞여 있던 Tag도 같은 규칙으로 각 내부 항목에 재배치한다.
 
-## Suggest UI
-- iPad modal 내부에서도 Character/Profile suggestion이 행 밖으로 표시되도록
-  overflow/z-index/absolute positioning을 보강.
+## Character 일반 Tag 검색 수정
+- Character의 일반 Tag 검색은 이제 Character/Profile Tag Head를 상속하지 않는다.
+- 실제 해당 Character 하위 Tag 필드에 지정된 Tag Head만 사용한다.
+- Profile Tag(`tag.profileId`가 있는 Tag)는 일반 Tag 검색 후보에서 제외한다.
+- 직접 입력으로 새 Tag를 만들 때도 해당 하위 필드에 지정된 첫 Tag Head로 생성한다.
+- Character 하위 필드별 Tag 삭제도 서로 독립적으로 처리한다.
