@@ -1,20 +1,22 @@
-# Tagmark v2.50
+# Tagmark v2.51
 
-## Tag Head 기반 자동 분배
-- Bookmark 수정창을 열 때 일반 Tag 필드에 섞여 있는 Tag를 검사한다.
-- Tag의 `tagHeadId`가 특정 Tag 입력 필드의 `allowedTagHeadIds`와 일치하면 해당 항목 필드로 자동 배치한다.
-- 저장 시에도 같은 분배를 한 번 더 적용한다.
-- 따라서 구형 DB처럼 Series/Artist/Language 등 '항목으로 표시되는 Tag'가 일반 Tag에 남아 있어도 해당 항목으로 복원된다.
-- 엔진은 Series/Artist 같은 이름을 하드코딩하지 않고 Field의 Tag Head 설정만 사용한다.
+## 입력 Renderer 통합
+- Character 내부 일반 필드와 Profile Input 내부 필드가 같은 `structuredInputControl()`을 사용한다.
+- Text / Long Text / Tag Search / Radio / Checkbox / Dropdown / Cycle Button / Toggle / Number / Date / URL / Color가 동일한 규칙으로 렌더링된다.
+- Character의 바깥 행 UI, 추가/복사/선택 구조는 유지했다.
 
-## Character/Profile Tag 자동 분배
-- Character Profile 선택 시 그 Profile이 가진 Tag들을 읽는다.
-- Character 내부 각 `tag_search` 필드의 `allowedTagHeadIds`와 비교해 일치하는 필드에 자동 입력한다.
-- 기존 Bookmark를 수정할 때 Character의 일반 `tags`에 섞여 있던 Tag도 같은 규칙으로 각 내부 항목에 재배치한다.
+## 필드 수정 반영
+- Character 내부 필드의 Input Type 변경이 실제 입력 UI에 바로 반영된다.
+- `태그 검색`으로 바꾸면 공통 Tag 검색 동작을 사용하고 해당 하위 필드의 `allowedTagHeadIds`만 참조한다.
+- Dropdown/Checkbox/Radio/Cycle Button의 선택지를 Character 필드 설정에서 저장하도록 수정했다.
+- 저장 시 각 Input Type에 맞는 값 읽기 로직도 통합했다.
 
-## Character 일반 Tag 검색 수정
-- Character의 일반 Tag 검색은 이제 Character/Profile Tag Head를 상속하지 않는다.
-- 실제 해당 Character 하위 Tag 필드에 지정된 Tag Head만 사용한다.
-- Profile Tag(`tag.profileId`가 있는 Tag)는 일반 Tag 검색 후보에서 제외한다.
-- 직접 입력으로 새 Tag를 만들 때도 해당 하위 필드에 지정된 첫 Tag Head로 생성한다.
-- Character 하위 필드별 Tag 삭제도 서로 독립적으로 처리한다.
+## Tag 검색/표시 수정
+- Character의 일반 Tag 검색은 Profile/Character Tag를 일반 태그 후보로 사용하지 않는다.
+- 하위 필드별 Tag Head 설정을 독립적으로 사용한다.
+- `.tb` 공통 Tag box의 × 삭제가 작동하지 않던 selector 오류를 수정했다.
+
+## 자동 분배
+- v2.50의 Tag Head 기반 Bookmark/Character 자동 분배는 유지한다.
+- 일반 Tag에 섞인 항목형 Tag는 현재 Field의 `allowedTagHeadIds`에 따라 수정창에서 해당 필드로 복원된다.
+- Profile 선택 시 Profile의 Tag도 Character 내부의 일치하는 Tag 필드로 분배된다.
