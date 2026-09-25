@@ -67,7 +67,7 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 <div class="new-shell"><aside class="page-sidebar" id="pageSidebar"><div class="side-brand">Tagmark</div><button class="btn side-main" id="sideMainBtn">메인 페이지</button><button class="btn primary" id="newPageBtn">＋ 페이지</button><div class="side-pages" id="sidePages"></div></aside><main class="shell-main">
 <div class="app">
 <header>
- <div><div class="logo">Tagmark</div><div class="sub">v3.06 · Universal DB</div></div>
+ <div><div class="logo">Tagmark</div><div class="sub">v3.07 · Universal DB</div></div>
  <div class="toolbar"><button class="btn" id="mainPageBtn">메인</button><button class="btn" id="pageSettingsBtn">페이지 설정</button></div>
 </header>
 <div class="motto"><b>개발 모토:</b> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.</div>
@@ -104,7 +104,7 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 <div class="modal" id="settingsModal"><div class="dialog wide">
 <h2>페이지 설정</h2>
 <div class="field"><label>페이지 이름</label><input id="pageNameOnly"></div>
-<div class="field"><label>탭 순서 / 삭제</label><div id="pageTabOrder"></div></div>
+<div class="field"><label>탭 관리</label><div id="pageTabOrder"></div><div class="page-add-tab"><input id="pageNewTabName" placeholder="새 탭 이름"><select id="pageNewTabType"><option value="bookmark">북마크</option><option value="profile">프로필</option><option value="tag">태그</option><option value="category">카테고리</option><option value="custom">Custom</option></select><button class="btn primary" id="pageAddTabBtn">＋ 탭 추가</button></div></div>
 <div class="field"><label>페이지 데이터</label><div class="row">
 <button class="btn" id="pageImportBtn">가져오기</button>
 <button class="btn" id="pageExportBtn">내보내기</button>
@@ -116,8 +116,6 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 <div class="modal" id="tabSettingsModal"><div class="dialog wide">
 <h2>탭 설정</h2>
 <div id="currentTabSettings"></div>
-<hr>
-<div class="field"><label>새 탭 추가</label><div class="row"><input id="newTabName" placeholder="탭 이름" style="flex:1"><select id="newTabType"><option value="bookmark">북마크</option><option value="profile">프로필</option><option value="tag">태그</option><option value="category">카테고리</option></select><button class="btn primary" id="addTabBtn">추가</button></div></div>
 <div class="modal-actions"><button class="btn" data-close="tabSettingsModal">닫기</button><button class="btn primary" id="saveTabSettings">저장</button></div>
 </div></div>
 
@@ -666,6 +664,7 @@ ensureV301();persist();render();
     if(db)db.transaction(STORE,"readwrite").objectStore(STORE).put(shell,"appShell");
   }
   const basePersist=persist; persist=function(){basePersist();shellSave()};
+  window.__tm306={get shell(){return shell},shellSave,renderSide};
   function renderSide(){ensureShell();G("sidePages").innerHTML=shell.pages.map(p=>`<button class="btn side-page ${!mainMode&&pageIdOf(p)===shell.activePageId?'active':''}" data-open-page="${pageIdOf(p)}">${esc(p.page?.name||'페이지')}</button>`).join("");G("sidePages").querySelectorAll("[data-open-page]").forEach(b=>b.onclick=()=>switchPage(b.dataset.openPage));}
   function switchPage(id){shellSave();const p=shell.pages.find(x=>pageIdOf(x)===id);if(!p)return;state=clone305(p);shell.activePageId=id;activeTab=state.page.tabs[0]?.id||"";mainMode=false;G("pageSettingsBtn").classList.remove("hidden");window.__tm305.render305();renderSide()}
   function showMain(){shellSave();mainMode=true;G("pageSettingsBtn").classList.add("hidden");document.querySelector(".app").classList.add("main-mode");G("content").innerHTML="";let host=G("mainPageView");if(!host){host=document.createElement("div");host.id="mainPageView";host.className="main-page-view";document.querySelector(".app").appendChild(host)}host.innerHTML=`<h2>메인 페이지</h2><div class="hint" style="margin-bottom:12px">페이지를 선택하면 해당 페이지의 탭으로 들어갑니다.</div><div class="main-page-grid">${shell.pages.map(p=>`<div class="main-page-card" data-main-page="${pageIdOf(p)}"><b>${esc(p.page?.name||'페이지')}</b><div class="meta">탭 ${p.page?.tabs?.length||0}개 · 북마크 ${p.bookmarks?.length||0}개</div></div>`).join("")}</div>`;host.querySelectorAll("[data-main-page]").forEach(c=>c.onclick=()=>switchPage(c.dataset.mainPage));renderSide()}
@@ -683,4 +682,69 @@ ensureV301();persist();render();
   // Load/migrate the multi-page shell after IndexedDB is ready.
   (async()=>{while(!db)await new Promise(r=>setTimeout(r,10));const req=db.transaction(STORE,"readonly").objectStore(STORE).get("appShell");req.onsuccess=()=>{if(req.result?.pages?.length){shell=req.result;const p=shell.pages.find(x=>pageIdOf(x)===shell.activePageId)||shell.pages[0];state=clone305(p);activeTab=state.page.tabs[0]?.id||""}else{ensureShell();shellSave()}render();renderSide()}})();
 })();
-</script>\n</body></html>
+</script>\n
+<style>
+/* v3.07 — classic Tagmark toolbar: one clean horizontal control strip */
+.controls{padding:8px 10px!important;background:#fff!important;border-bottom:1px solid var(--line)!important;position:sticky;top:96px;z-index:30}
+.common-tools{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;width:100%;grid-template-columns:none!important}
+.common-tools .search-wrap{flex:1 1 280px;min-width:180px;max-width:420px}
+.common-tools .search-wrap input{width:100%}
+.common-tools .sort-select{width:auto!important;min-width:150px;flex:0 0 auto;grid-column:auto!important}
+.common-tools .view-tools{display:flex!important;align-items:center;gap:6px;flex-wrap:wrap;margin-left:0}
+.tab-local-tools{display:contents!important}
+.common-tools .btn{white-space:nowrap}
+.tag-filter-strip,.bulk-tools{flex:1 0 100%;margin-top:2px}
+.page-add-tab{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.page-add-tab input{flex:1 1 180px}.page-add-tab select{width:auto;min-width:120px}
+@media(max-width:700px){.controls{top:91px}.common-tools .search-wrap{flex:1 1 100%;max-width:none}.common-tools .sort-select{flex:1 1 140px}.common-tools .view-tools{flex:1 1 100%}}
+</style>
+<script>
+/* v3.07 corrective layer */
+(function(){
+ const G=id=>document.getElementById(id);
+ // Page creation is handled independently of the old v3.05 controller.
+ function openNewPage307(){G('newPageName').value='새 페이지';modal('pageCreateModal')}
+ function createPage307(){
+   const n=(G('newPageName').value||'').trim()||'새 페이지';
+   window.__tm306.shellSave();
+   const p=fresh(); p.version='3.07'; p.page.id='p'+Date.now().toString(36); p.page.name=n;
+   window.__tm306.shell.pages.push(p); window.__tm306.shell.activePageId=p.page.id; state=clone305(p); activeTab=state.page.tabs[0]?.id||'';
+   modal('pageCreateModal',false); persist(); window.render(); window.__tm306.renderSide();
+ }
+ G('newPageBtn').onclick=openNewPage307; G('saveNewPageBtn').onclick=createPage307;
+ // Tab creation belongs to Page Settings, never Tab Settings.
+ function wirePageAddTab307(){
+   const b=G('pageAddTabBtn'); if(!b)return;
+   b.onclick=()=>{
+     const type=G('pageNewTabType').value, name=(G('pageNewTabName').value||'').trim()||({bookmark:'북마크',profile:'프로필',tag:'태그',category:'카테고리',custom:'새 탭'})[type];
+     if(type==='bookmark'&&state.page.tabs.some(t=>t.type==='bookmark')){window.uiNotice('탭 추가','북마크 탭은 페이지당 하나만 둘 수 있습니다.');return}
+     const id='tab'+Date.now().toString(36); state.page.tabs.push({id,type,name,visibleTagHeadIds:[],profileKind:type==='profile'?'character':undefined});
+     state.page.ui=state.page.ui||{tabs:{}}; state.page.ui.tabs=state.page.ui.tabs||{}; G('pageNewTabName').value='';
+     window.__tm305.drawPageSettings(); wirePageAddTab307();
+   };
+ }
+ const oldDraw=window.__tm305.drawPageSettings;
+ window.__tm305.drawPageSettings=function(){oldDraw();wirePageAddTab307()};
+ // Page settings opener must use the patched draw routine.
+ G('pageSettingsBtn').onclick=()=>{window.__tm305.drawPageSettings();modal('settingsModal')};
+ // Rebuild tab-local tools in the same toolbar instead of a second mini-toolbar.
+ function cleanToolbar307(){
+   const c=G('controls'), t=state.page.tabs.find(x=>x.id===activeTab); if(!c||!t)return;
+   c.querySelectorAll('.tab-local-tools').forEach(x=>x.remove());
+   const host=c.querySelector('.view-tools')||c.querySelector('.common-tools'); if(!host)return;
+   let h=`<span class="tab-local-tools"><button class="btn sm" id="tabSettingsLocal">탭 설정</button><button class="btn sm" id="tabFieldSettingsLocal">필드 설정</button>`;
+   if(t.type==='bookmark')h+=`<button class="btn primary sm" id="addBookmarkLocal">＋ 북마크</button>`;
+   if(t.type==='tag')h+=`<button class="btn sm" id="tagHeadLocal">태그 머리 수정</button>`;
+   h+='</span>'; host.insertAdjacentHTML('beforeend',h);
+   G('tabSettingsLocal').onclick=()=>{window.__tm305.drawTabSettings();modal('tabSettingsModal')};
+   G('tabFieldSettingsLocal').onclick=window.__tm305.openFieldSettings305;
+   if(G('addBookmarkLocal'))G('addBookmarkLocal').onclick=()=>openBookmark();
+   if(G('tagHeadLocal'))G('tagHeadLocal').onclick=window.__tm305.openTagHeads;
+ }
+ const rb=window.renderBookmarks, rt=window.renderTags, rp=window.renderProfiles, rc=window.renderCategories;
+ window.renderBookmarks=function(){rb();cleanToolbar307()}; window.renderTags=function(){rt();cleanToolbar307()}; window.renderProfiles=function(){rp();cleanToolbar307()}; window.renderCategories=function(){rc();cleanToolbar307()};
+ // Initial rebinding after all previous layers have loaded.
+ setTimeout(()=>{G('newPageBtn').onclick=openNewPage307;G('saveNewPageBtn').onclick=createPage307;G('pageSettingsBtn').onclick=()=>{window.__tm305.drawPageSettings();modal('settingsModal')};},0);
+})();
+</script>
+</body></html>
