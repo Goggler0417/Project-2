@@ -797,10 +797,62 @@ ensureV301();persist();render();
   window.render=function(){leaveMain();oldRender();bindSide308();bindToolbar308()};
   $('newPageBtn').onclick=openCreate; $('saveNewPageBtn').onclick=createPage308;
   $('sideMainBtn').onclick=showMain308; if($('mainPageBtn'))$('mainPageBtn').onclick=showMain308;
-  const mo=new MutationObserver(()=>{if(!document.querySelector('.app')?.classList.contains('main-mode')){bindSide308();bindToolbar308()}});
-  mo.observe(document.body,{childList:true,subtree:true});
   setTimeout(()=>{bindSide308();bindToolbar308()},50);
   window.__tm308={openPage:openPage308,showMain:showMain308,createPage:createPage308,bindSide:bindSide308,bindToolbar:bindToolbar308};
+})();
+</script>
+
+
+<script>
+/* v3.09 — stable event controller; no recursive DOM observer */
+(function(){
+  const G=id=>document.getElementById(id), cp=x=>structuredClone(x);
+  const sh=()=>window.__tm306?.shell;
+  const pid=p=>p?.page?.id;
+  function syncSide(){
+    const s=sh(), host=G('sidePages'); if(!s||!host)return;
+    const main=document.querySelector('.app')?.classList.contains('main-mode');
+    host.innerHTML=s.pages.map(p=>`<button class="btn side-page ${!main&&pid(p)===s.activePageId?'active':''}" data-v309-page="${pid(p)}">${esc(p.page?.name||'페이지')}</button>`).join('');
+  }
+  function leaveMain(){document.querySelector('.app')?.classList.remove('main-mode');G('mainPageView')?.remove();G('pageSettingsBtn')?.classList.remove('hidden')}
+  function openPage(id){
+    const s=sh(); if(!s)return; window.__tm306.shellSave();
+    const p=s.pages.find(x=>pid(x)===id); if(!p)return;
+    state=cp(p); s.activePageId=id; activeTab=state.page.tabs[0]?.id||''; leaveMain(); window.__tm305.render305(); syncSide();
+  }
+  function showMain(){
+    const s=sh(); if(!s)return; window.__tm306.shellSave();
+    document.querySelector('.app')?.classList.add('main-mode');G('pageSettingsBtn')?.classList.add('hidden');
+    let host=G('mainPageView'); if(!host){host=document.createElement('div');host.id='mainPageView';host.className='main-page-view';document.querySelector('.app').appendChild(host)}
+    host.innerHTML=`<h2>메인 페이지</h2><div class="hint" style="margin-bottom:12px">페이지를 선택하면 해당 페이지의 탭으로 들어갑니다.</div><div class="main-page-grid">${s.pages.map(p=>`<button class="main-page-card" data-v309-page="${pid(p)}"><b>${esc(p.page?.name||'페이지')}</b><div class="meta">탭 ${p.page?.tabs?.length||0}개 · 북마크 ${p.bookmarks?.length||0}개</div></button>`).join('')}</div>`; syncSide();
+  }
+  function createPage(){
+    const s=sh(); if(!s)return; window.__tm306.shellSave();
+    const p=fresh(), n=(G('newPageName')?.value||'').trim()||'새 페이지'; p.version='3.09';p.page.id='p'+Date.now().toString(36);p.page.name=n;
+    s.pages.push(cp(p));s.activePageId=p.page.id;state=cp(p);activeTab=state.page.tabs[0]?.id||'';modal('pageCreateModal',false);persist();leaveMain();window.__tm305.render305();syncSide();
+  }
+  function addTab(){
+    const type=G('pageNewTabType')?.value||'custom', raw=(G('pageNewTabName')?.value||'').trim();
+    if(type==='bookmark'&&state.page.tabs.some(t=>t.type==='bookmark')){window.uiNotice('탭 추가','북마크 탭은 페이지당 하나만 둘 수 있습니다.');return}
+    const name=raw||({bookmark:'북마크',profile:'프로필',tag:'태그',category:'카테고리',custom:'새 탭'})[type]||'새 탭', id='tab'+Date.now().toString(36);
+    state.page.tabs.push({id,type,name,visibleTagHeadIds:[],profileKind:type==='profile'?'character':undefined});state.page.ui=state.page.ui||{tabs:{}};state.page.ui.tabs=state.page.ui.tabs||{};persist();window.__tm305.drawPageSettings();
+  }
+  document.addEventListener('click',function(e){
+    const b=e.target.closest('button,[data-v309-page]'); if(!b)return; const id=b.id;
+    if(b.dataset.v309Page){e.preventDefault();e.stopImmediatePropagation();openPage(b.dataset.v309Page);return}
+    if(id==='sideMainBtn'||id==='mainPageBtn'){e.preventDefault();e.stopImmediatePropagation();showMain();return}
+    if(id==='newPageBtn'){e.preventDefault();e.stopImmediatePropagation();G('newPageName').value='새 페이지';modal('pageCreateModal');return}
+    if(id==='saveNewPageBtn'){e.preventDefault();e.stopImmediatePropagation();createPage();return}
+    if(id==='pageSettingsBtn'){e.preventDefault();e.stopImmediatePropagation();window.__tm305.drawPageSettings();modal('settingsModal');return}
+    if(id==='pageAddTabBtn'){e.preventDefault();e.stopImmediatePropagation();addTab();return}
+    if(id==='tabSettingsLocal'){e.preventDefault();e.stopImmediatePropagation();window.__tm305.drawTabSettings();modal('tabSettingsModal');return}
+    if(id==='tabFieldSettingsLocal'){e.preventDefault();e.stopImmediatePropagation();window.__tm305.openFieldSettings305();return}
+    if(id==='addBookmarkLocal'){e.preventDefault();e.stopImmediatePropagation();openBookmark();return}
+    if(id==='tagHeadLocal'){e.preventDefault();e.stopImmediatePropagation();window.__tm305.openTagHeads();return}
+  },true);
+  const baseRender=window.render;window.render=function(){baseRender();syncSide()};
+  setTimeout(syncSide,80);
+  window.__tm309={syncSide,openPage,showMain,createPage};
 })();
 </script>
 
