@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tagmark v3.06</title>
+<title>Tagmark v3.08</title>
 <style>
 :root{--bg:#f4f6fa;--panel:#fff;--line:#dfe3ea;--text:#1d2430;--muted:#758092;--primary:#2f6fed;--danger:#c53d4d;--shadow:0 8px 24px rgba(0,0,0,.08);--male:#3977c8;--female:#c65087;--both:#8a62bd}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:1180px;margin:auto;padding:0 12px 24px}
@@ -67,7 +67,7 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 <div class="new-shell"><aside class="page-sidebar" id="pageSidebar"><div class="side-brand">Tagmark</div><button class="btn side-main" id="sideMainBtn">메인 페이지</button><button class="btn primary" id="newPageBtn">＋ 페이지</button><div class="side-pages" id="sidePages"></div></aside><main class="shell-main">
 <div class="app">
 <header>
- <div><div class="logo">Tagmark</div><div class="sub">v3.07 · Universal DB</div></div>
+ <div><div class="logo">Tagmark</div><div class="sub">v3.08 · Universal DB</div></div>
  <div class="toolbar"><button class="btn" id="mainPageBtn">메인</button><button class="btn" id="pageSettingsBtn">페이지 설정</button></div>
 </header>
 <div class="motto"><b>개발 모토:</b> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.</div>
@@ -747,4 +747,61 @@ ensureV301();persist();render();
  setTimeout(()=>{G('newPageBtn').onclick=openNewPage307;G('saveNewPageBtn').onclick=createPage307;G('pageSettingsBtn').onclick=()=>{window.__tm305.drawPageSettings();modal('settingsModal')};},0);
 })();
 </script>
+
+<script>
+/* v3.08 verified navigation/controller repair */
+(function(){
+  const $=id=>document.getElementById(id);
+  const cp=x=>structuredClone(x);
+  function shell(){return window.__tm306&&window.__tm306.shell}
+  function pageId(p){return p&&p.page&&p.page.id}
+  function leaveMain(){document.querySelector('.app')?.classList.remove('main-mode');$('mainPageView')?.remove();$('pageSettingsBtn')?.classList.remove('hidden')}
+  function bindSide308(){
+    const sh=shell(), host=$('sidePages'); if(!sh||!host)return;
+    host.innerHTML=sh.pages.map(p=>`<button class="btn side-page ${pageId(p)===sh.activePageId?'active':''}" data-v308-page="${pageId(p)}">${esc(p.page?.name||'페이지')}</button>`).join('');
+    host.querySelectorAll('[data-v308-page]').forEach(b=>b.onclick=()=>openPage308(b.dataset.v308Page));
+  }
+  function openPage308(id){
+    const sh=shell(); if(!sh)return;
+    window.__tm306.shellSave();
+    const p=sh.pages.find(x=>pageId(x)===id); if(!p)return;
+    state=cp(p); sh.activePageId=id; activeTab=state.page.tabs[0]?.id||'';
+    leaveMain(); window.__tm305.render305(); bindSide308(); bindToolbar308();
+  }
+  function showMain308(){
+    const sh=shell(); if(!sh)return; window.__tm306.shellSave();
+    document.querySelector('.app')?.classList.add('main-mode'); $('pageSettingsBtn')?.classList.add('hidden');
+    let host=$('mainPageView'); if(!host){host=document.createElement('div');host.id='mainPageView';host.className='main-page-view';document.querySelector('.app').appendChild(host)}
+    host.innerHTML=`<h2>메인 페이지</h2><div class="hint" style="margin-bottom:12px">페이지를 선택하면 해당 페이지의 탭으로 들어갑니다.</div><div class="main-page-grid">${sh.pages.map(p=>`<button class="main-page-card" data-v308-main="${pageId(p)}"><b>${esc(p.page?.name||'페이지')}</b><div class="meta">탭 ${p.page?.tabs?.length||0}개 · 북마크 ${p.bookmarks?.length||0}개</div></button>`).join('')}</div>`;
+    host.querySelectorAll('[data-v308-main]').forEach(b=>b.onclick=()=>openPage308(b.dataset.v308Main)); bindSide308();
+  }
+  function createPage308(){
+    const sh=shell(); if(!sh)return;
+    window.__tm306.shellSave(); const n=($('newPageName').value||'').trim()||'새 페이지';
+    const p=fresh(); p.version='3.08'; p.page.id='p'+Date.now().toString(36); p.page.name=n;
+    sh.pages.push(cp(p)); sh.activePageId=p.page.id; state=cp(p); activeTab=state.page.tabs[0]?.id||'';
+    modal('pageCreateModal',false); persist(); leaveMain(); window.__tm305.render305(); bindSide308(); bindToolbar308();
+  }
+  function openCreate(){ $('newPageName').value='새 페이지'; modal('pageCreateModal') }
+  function bindToolbar308(){
+    const t=state.page.tabs.find(x=>x.id===activeTab); if(!t)return;
+    const map={
+      tabSettingsLocal:()=>{window.__tm305.drawTabSettings();modal('tabSettingsModal')},
+      tabFieldSettingsLocal:()=>window.__tm305.openFieldSettings305(),
+      addBookmarkLocal:()=>openBookmark(),
+      tagHeadLocal:()=>window.__tm305.openTagHeads()
+    };
+    Object.entries(map).forEach(([id,fn])=>{const b=$(id);if(b)b.onclick=fn});
+  }
+  const oldRender=window.render;
+  window.render=function(){leaveMain();oldRender();bindSide308();bindToolbar308()};
+  $('newPageBtn').onclick=openCreate; $('saveNewPageBtn').onclick=createPage308;
+  $('sideMainBtn').onclick=showMain308; if($('mainPageBtn'))$('mainPageBtn').onclick=showMain308;
+  const mo=new MutationObserver(()=>{if(!document.querySelector('.app')?.classList.contains('main-mode')){bindSide308();bindToolbar308()}});
+  mo.observe(document.body,{childList:true,subtree:true});
+  setTimeout(()=>{bindSide308();bindToolbar308()},50);
+  window.__tm308={openPage:openPage308,showMain:showMain308,createPage:createPage308,bindSide:bindSide308,bindToolbar:bindToolbar308};
+})();
+</script>
+
 </body></html>
