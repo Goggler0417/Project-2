@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tagmark v3.02</title>
+<title>Tagmark v3.05</title>
 <style>
 :root{--bg:#f4f6fa;--panel:#fff;--line:#dfe3ea;--text:#1d2430;--muted:#758092;--primary:#2f6fed;--danger:#c53d4d;--shadow:0 8px 24px rgba(0,0,0,.08);--male:#3977c8;--female:#c65087;--both:#8a62bd}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:1180px;margin:auto;padding:0 12px 24px}
@@ -22,7 +22,7 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 .empty{padding:30px;text-align:center;color:var(--muted)}.split{display:grid;grid-template-columns:220px 1fr;gap:10px}.sidebox{border-right:1px solid var(--line);padding-right:10px}.cat-row{padding:8px;border-bottom:1px solid #eef0f4}.cycle{min-width:100px;font-weight:700}
 @media(max-width:700px){.app{padding:0 7px 12px}.logo{font-size:19px}.tabs{top:55px}.controls{top:91px}.split{grid-template-columns:1fr}.sidebox{border-right:0;border-bottom:1px solid var(--line);padding:0 0 9px}.dialog{padding:12px}.char-grid{grid-template-columns:1fr}.toolbar .btn{padding:7px 8px;font-size:12px}}
 
-/* v3.02 — v3.01 base + legacy/new UI convenience merge */
+/* v3.05 — v3.01 base + legacy/new UI convenience merge */
 .select-box{width:18px!important;height:18px;flex:0 0 auto;margin:2px 4px 0 0}
 .bulk-tools{display:none;margin-top:7px;padding:7px 8px;border:1px solid var(--line);border-radius:10px;background:#fafbfe;gap:5px;align-items:center;flex-wrap:wrap}
 .bulk-tools.open{display:flex}
@@ -50,13 +50,47 @@ header{position:sticky;top:0;z-index:40;background:rgba(244,246,250,.96);backdro
 .ui-crumb{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);padding:6px 2px}
 .ui-crumb b{color:var(--text)}
 @media(max-width:760px){.bulk-tools{overflow-x:auto;flex-wrap:nowrap}.bulk-tools>*{flex:0 0 auto}.profile-picker-row{grid-template-columns:1fr}.select-box{width:20px!important;height:20px}}
+
+/* v3.05 — v2 Main Page → Page → Tab shell */
+.v2shell{display:flex;min-height:100vh;background:var(--bg)}
+.v2sidebar{width:250px;flex:0 0 250px;background:#202633;color:#fff;padding:18px;display:flex;flex-direction:column;gap:12px}
+.v2brand{font-size:19px;font-weight:800}.v2version{font-size:11px;color:#9ca3af;margin-top:-8px}
+.v2sideactions{display:flex;gap:7px}.v2sideactions .btn{flex:1;background:#fff;color:#222}
+.v2pagelist{display:flex;flex-direction:column;gap:5px;overflow:auto}
+.v2pageitem{padding:10px;border-radius:9px;color:#d1d5db;display:flex;align-items:center;gap:8px;cursor:pointer;border:0;background:transparent;text-align:left;width:100%}
+.v2pageitem.active{background:#30394a;color:#fff}.v2pageitem:hover{background:#2a3241}
+.v2drag{color:#9ca3af}.v2pagename{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v2main{flex:1;min-width:0}.v2main>.app{min-height:100vh}
+.v2mainview{padding:18px 0}.v2mainhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.v2mainhead h2{margin:0}.v2mainactions{display:flex;gap:7px;flex-wrap:wrap}
+.v2mainpages{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.v2mainpages.list{display:flex;flex-direction:column}
+.v2pagecard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:17px;cursor:pointer;position:relative;box-shadow:0 1px 3px #0000000a}
+.v2pagecard h3{margin:5px 70px 6px 0;word-break:break-word}.v2pagecard .meta{display:block;margin-top:4px}
+.v2pagecardactions{position:absolute;right:10px;top:10px;display:flex;gap:4px}.v2pagecardactions .btn{padding:5px 8px}
+.v2mainempty{padding:45px;text-align:center;background:#fff;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+body.v2-main-mode #tabs,body.v2-main-mode #controls,body.v2-main-mode #addBtn,body.v2-main-mode #pageSettingsBtn,body.v2-main-mode .ui-crumb{display:none!important}
+body.v2-main-mode #content{padding-top:0}
+@media(max-width:760px){
+ .v2sidebar{position:fixed;left:0;top:0;bottom:0;width:min(300px,88vw);z-index:500;transform:translateX(-105%);transition:transform .18s;box-shadow:20px 0 50px #0005}
+ .v2sidebar.open{transform:translateX(0)}
+ .v2main{width:100%}.v2mainpages{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+<div class="v2shell">
+<aside class="v2sidebar" id="v2sidebar">
+  <div class="v2brand">Tagmark</div>
+  <div class="v2version">v3.05 · Main Page / Page / Tab</div>
+  <div class="v2sideactions"><button class="btn" id="v2NewPage">＋ Page</button><button class="btn" id="v2GoMain">Main</button></div>
+  <div class="v2pagelist" id="v2PageList"></div>
+</aside>
+<div class="v2main">
 <div class="app">
 <header>
- <div><div class="logo">Tagmark</div><div class="sub">v3.02 · Local Prototype</div></div>
- <div class="toolbar"><button class="btn" id="pageSettingsBtn">페이지 설정</button><button class="btn" id="importBtn">가져오기</button><button class="btn" id="exportBtn">백업</button><button class="btn primary" id="addBtn">＋ 북마크</button></div>
+ <div><div class="logo">Tagmark</div><div class="sub">v3.05 · Local Prototype</div></div>
+ <div class="toolbar"><button class="btn" id="v2TopMain">Main</button><button class="btn" id="pageSettingsBtn">페이지 설정</button><button class="btn" id="importBtn">가져오기</button><button class="btn" id="exportBtn">백업</button><button class="btn primary" id="addBtn">＋ 북마크</button></div>
 </header>
 <div class="motto"><b>개발 모토:</b> DB에는 사실만 저장하고, Schema에는 구성 방법을 저장하고, UI가 그것을 해석한다.</div>
 <div class="ui-crumb"><span>Tagmark</span><span>›</span><b id="pageCrumb">기본 페이지</b></div><div class="tabs" id="tabs"></div>
@@ -124,7 +158,7 @@ const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g
 const DB_NAME="tagmark-v3", STORE="state"; let db=null, activeTab="bookmarks", editingBookmark=null, editingProfile=null, editingField=null, editingInput=null;
 const headColors=["#c65087","#3977c8","#8a62bd","#9a6b28","#2e8b72","#b24d3e","#596477","#1b7f9e"];
 const fresh=()=>({
- version:"3.02", ids:{bookmark:{next:3,free:[]},tag:{next:12,free:[]},profile:{next:3,free:[]},folder:{next:2,free:[]},category:{next:4,free:[]},field:{next:8,free:[]},input:{next:10,free:[]},head:{next:8,free:[]}},
+ version:"3.05", ids:{bookmark:{next:3,free:[]},tag:{next:12,free:[]},profile:{next:3,free:[]},folder:{next:2,free:[]},category:{next:4,free:[]},field:{next:8,free:[]},input:{next:10,free:[]},head:{next:8,free:[]}},
  page:{id:"p1",name:"기본 페이지",tabs:[{id:"bookmarks",type:"bookmark",name:"북마크"},{id:"tags",type:"tag",name:"태그"},{id:"profiles",type:"profile",name:"등장인물"},{id:"categories",type:"category",name:"카테고리"}]},
  tagHeads:[
   {id:"h1",name:"artist",color:"#9a6b28"},{id:"h2",name:"series",color:"#8a62bd"},{id:"h3",name:"language",color:"#2e8b72"},{id:"h4",name:"character",color:"#3977c8"},{id:"h5",name:"gender",color:"#c65087"},{id:"h6",name:"role",color:"#b24d3e"},{id:"h7",name:"tag",color:"#596477"}],
@@ -148,7 +182,7 @@ const fresh=()=>({
   {id:"f7",name:"메모",display:"memo",visible:true,inputs:[{id:"ia",name:"메모",type:"value",format:"longtext",condition:{mode:"always"}}]}
  ]},
  bookmarks:[
-  {id:"b1",folderId:"d1",categoryId:"c1",values:{i1:"예시 북마크",i2:"https://example.com",i3:["t2"],i4:["t1"],i5:"page",i6:120,i8:["r1"],i9:["t3","t4"],ia:"v3.02 프로토타입 예시입니다."}},
+  {id:"b1",folderId:"d1",categoryId:"c1",values:{i1:"예시 북마크",i2:"https://example.com",i3:["t2"],i4:["t1"],i5:"page",i6:120,i8:["r1"],i9:["t3","t4"],ia:"v3.05 프로토타입 예시입니다."}},
   {id:"b2",folderId:null,categoryId:"c2",values:{i1:"영상 예시",i2:"https://example.com/video",i3:["t2"],i5:"video",i7:5535,i8:["r2"],i9:["tb"]}}
  ]});
 let state=fresh();
@@ -274,7 +308,7 @@ function renderInputTypeBoxes(i){const t=$("inputType").value;$("valueFormatBox"
 $("saveInput").onclick=()=>{const f=state.schema.fields.find(x=>x.id===editingField),i=f.inputs.find(x=>x.id===editingInput);i.name=$("inputName").value.trim()||i.name;i.type=$("inputType").value;if(i.type==="value")i.format=$("inputFormat").value;else delete i.format;if(i.type==="tag"){i.allowedHeadIds=[...$("allowedHeads").querySelectorAll("input:checked")].map(x=>x.value);i.routeHeadIds=[...$("routeHeads").querySelectorAll("input:checked")].map(x=>x.value).filter(x=>i.allowedHeadIds.includes(x))}if(i.type==="profile")i.profileKind=$("inputProfileKind").value;i.condition=$("conditionMode").value==="always"?{mode:"always"}:{mode:"equals",inputId:$("conditionInput").value,value:$("conditionValue").value};persist();modal("inputModal",false);renderFieldInputs(f)}
 $("deleteInput").onclick=()=>{const f=state.schema.fields.find(x=>x.id===editingField);if(confirm("입력칸을 삭제할까요?")){f.inputs=f.inputs.filter(x=>x.id!==editingInput);persist();modal("inputModal",false);renderFieldInputs(f)}}
 
-$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tagmark-v3.02-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="tagmark-v3.05-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x.page||!x.schema||!x.tags)throw Error("형식 오류");if(confirm("현재 프로토타입 데이터를 가져온 백업으로 교체할까요?")){state=x;persist();render()}}catch(err){alert("가져오기 실패: "+err.message)}e.target.value=""}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open,.search-suggest.open").forEach(x=>x.classList.remove("open"))});
 document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target.closest(".search-wrap"))document.querySelectorAll(".search-suggest.open").forEach(x=>x.classList.remove("open"))});
@@ -283,7 +317,7 @@ document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target
 </script>
 
 <style>
-/* v3.02 common tab toolbar + layouts */
+/* v3.05 common tab toolbar + layouts */
 .panel{min-height:0;overflow:visible}
 .controls{top:96px;display:block;padding:7px 8px;background:#fff}
 .common-tools{display:grid;grid-template-columns:minmax(190px,1fr) minmax(130px,190px) auto auto auto auto;gap:6px;align-items:center}
@@ -300,10 +334,10 @@ document.addEventListener("click",e=>{if(!e.target.closest(".picker")&&!e.target
 @media(max-width:760px){.common-tools{grid-template-columns:minmax(0,1fr) auto auto auto}.common-tools .search-wrap{grid-column:1/-1}.common-tools .sort-select{grid-column:1/3}.tab-config-row{grid-template-columns:auto 1fr auto}.tab-config-row .tab-type{grid-column:2/3}.tab-config-detail{grid-column:1/-1}.controls{top:91px}}
 </style>
 <script>
-/* v3.02 interaction layer. Data facts remain in data arrays; configuration stays in page/schema/ui. */
+/* v3.05 interaction layer. Data facts remain in data arrays; configuration stays in page/schema/ui. */
 let uiState={};
 function ensureV301(){
- state.version="3.02";
+ state.version="3.05";
  state.page.ui=state.page.ui||{};
  state.page.ui.tabs=state.page.ui.tabs||{};
  state.page.tabs.forEach(t=>{t.visibleTagHeadIds=t.visibleTagHeadIds||[];if(t.type==="profile"&&!t.profileKind)t.profileKind="character"});
@@ -391,6 +425,144 @@ const oldOpenBookmark=openBookmark;openBookmark=function(id=null){oldOpenBookmar
 const oldOpenProfile=openProfile;openProfile=function(id=null){oldOpenProfile(id);const oldSave=$("saveProfile").onclick;$("saveProfile").onclick=()=>{oldSave();const p=id?state.profiles.find(x=>x.id===id):state.profiles[state.profiles.length-1];if(p)p.updatedAt=Date.now();persist()}}
 
 ensureV301();persist();render();
+
+/* ================= v3.05: v2 Main Page → Page → Tab system ================= */
+function v305Clone(x){return structuredClone(x)}
+function v305PageSnapshot(){
+  return {
+    id:state.page.id||"p1",
+    name:state.page.name||"새 Page",
+    description:state.page.description||"",
+    order:state.page.order??0,
+    page:v305Clone(state.page),
+    tagHeads:v305Clone(state.tagHeads),tags:v305Clone(state.tags),profiles:v305Clone(state.profiles),
+    categories:v305Clone(state.categories),folders:v305Clone(state.folders),schema:v305Clone(state.schema),
+    bookmarks:v305Clone(state.bookmarks),ids:v305Clone(state.ids)
+  };
+}
+function v305ApplyPage(p){
+  state.page=v305Clone(p.page||{id:p.id,name:p.name,tabs:[]});
+  state.page.id=p.id;state.page.name=p.name;state.page.description=p.description||"";state.page.order=p.order??0;
+  state.tagHeads=v305Clone(p.tagHeads||[]);state.tags=v305Clone(p.tags||[]);state.profiles=v305Clone(p.profiles||[]);
+  state.categories=v305Clone(p.categories||[]);state.folders=v305Clone(p.folders||[]);state.schema=v305Clone(p.schema||{fields:[]});
+  state.bookmarks=v305Clone(p.bookmarks||[]);state.ids=v305Clone(p.ids||state.ids);
+  activeTab=state.page.tabs?.some(t=>t.id===p.activeTabId)?p.activeTabId:(state.page.tabs?.[0]?.id||null);
+}
+function v305Ensure(){
+  ensureV301();
+  state.version="3.05";
+  if(!state.workspace){
+    const first=v305PageSnapshot(); first.id=first.id||"p1"; first.page.id=first.id; first.activeTabId=activeTab;
+    state.workspace={main:{layout:"grid",sort:"asc"},activePageId:first.id,pages:[first]};
+  }
+  state.workspace.main=state.workspace.main||{layout:"grid",sort:"asc"};
+  state.workspace.pages=state.workspace.pages||[];
+}
+function v305CommitPage(){
+  if(!state.workspace||!state.workspace.activePageId)return;
+  const i=state.workspace.pages.findIndex(p=>p.id===state.workspace.activePageId); if(i<0)return;
+  const snap=v305PageSnapshot();snap.id=state.workspace.activePageId;snap.page.id=snap.id;snap.activeTabId=activeTab;
+  state.workspace.pages[i]=snap;
+}
+const v305PersistBase=persist;
+persist=function(){v305Ensure();v305CommitPage();v305PersistBase()}
+function v305AllocPageId(){
+  const used=new Set(state.workspace.pages.map(p=>p.id));let n=1,id;
+  do{id="p"+(n++).toString(36)}while(used.has(id));return id
+}
+function v305RenderSidebar(){
+  const host=$("v2PageList");if(!host)return;
+  const pages=[...state.workspace.pages].sort((a,b)=>(a.order??0)-(b.order??0));
+  host.innerHTML=pages.map(p=>`<button type="button" class="v2pageitem ${state.workspace.activePageId===p.id&&!document.body.classList.contains("v2-main-mode")?"active":""}" data-v2-page="${p.id}"><span class="v2drag">☰</span><span class="v2pagename">${esc(p.name)}</span></button>`).join("");
+  host.querySelectorAll("[data-v2-page]").forEach(b=>b.onclick=()=>v305OpenPage(b.dataset.v2Page));
+}
+function v305GoMain(){
+  v305CommitPage();state.workspace.activePageId=null;state.page.ui=state.page.ui||{};
+  document.body.classList.add("v2-main-mode");persist();v305Render();
+}
+function v305OpenPage(id){
+  v305CommitPage();const p=state.workspace.pages.find(x=>x.id===id);if(!p)return;
+  state.workspace.activePageId=id;v305ApplyPage(p);document.body.classList.remove("v2-main-mode");v305PersistBase();v305Render();
+}
+function v305MainView(){
+  const m=state.workspace.main;let ps=[...state.workspace.pages];
+  ps.sort((a,b)=>m.sort==="manual"?(a.order??0)-(b.order??0):m.sort==="asc"?a.name.localeCompare(b.name,"ko"):b.name.localeCompare(a.name,"ko"));
+  $("content").innerHTML=`<div class="v2mainview"><div class="v2mainhead"><h2>Main Page</h2><div class="v2mainactions"><button class="btn primary" id="v2MainNew">＋ Page</button><button class="btn" id="v2MainLayout">${m.layout==="grid"?"그리드":"목록"}</button><button class="btn" id="v2MainSort">${m.sort==="asc"?"A→Z":m.sort==="desc"?"Z→A":"수동"}</button></div></div><div class="v2mainpages ${m.layout==="list"?"list":""}">${ps.map(p=>`<article class="v2pagecard" data-v2-open-card="${p.id}"><div class="v2pagecardactions"><button class="btn sm" data-v2-edit-page="${p.id}">✎</button><button class="btn sm danger" data-v2-delete-page="${p.id}">×</button></div><h3>${esc(p.name)}</h3><span class="meta">${(p.page?.tabs||[]).length} Tabs · ${(p.bookmarks||[]).length} Bookmarks</span>${p.description?`<span class="meta">${esc(p.description)}</span>`:""}</article>`).join("")||'<div class="v2mainempty">Page가 없습니다.</div>'}</div></div>`;
+  $("v2MainNew").onclick=v305NewPage;
+  $("v2MainLayout").onclick=()=>{m.layout=m.layout==="grid"?"list":"grid";v305PersistBase();v305MainView()};
+  $("v2MainSort").onclick=()=>{m.sort=m.sort==="asc"?"desc":m.sort==="desc"?"manual":"asc";v305PersistBase();v305MainView()};
+  document.querySelectorAll("[data-v2-open-card]").forEach(x=>x.onclick=e=>{if(e.target.closest("button"))return;v305OpenPage(x.dataset.v2OpenCard)});
+  document.querySelectorAll("[data-v2-edit-page]").forEach(x=>x.onclick=e=>{e.stopPropagation();v305EditPage(x.dataset.v2EditPage)});
+  document.querySelectorAll("[data-v2-delete-page]").forEach(x=>x.onclick=e=>{e.stopPropagation();v305DeletePage(x.dataset.v2DeletePage)});
+}
+function v305BlankPage(name){
+  const current=v305PageSnapshot(),id=v305AllocPageId();
+  const p=v305Clone(current);p.id=id;p.name=name||"새 Page";p.description="";p.order=state.workspace.pages.length;
+  p.page.id=id;p.page.name=p.name;p.page.description="";p.page.order=p.order;
+  // v2 semantics: Page owns independent data. New Page starts empty but keeps the same schema/configuration conveniences.
+  p.bookmarks=[];p.folders=[];p.profiles=[];p.tags=[];p.categories=[];p.activeTabId=p.page.tabs?.[0]?.id||null;
+  return p
+}
+function v305NewPage(){
+  const name=prompt("새 Page 이름","새 Page");if(name===null)return;
+  v305CommitPage();const p=v305BlankPage(name.trim()||"새 Page");state.workspace.pages.push(p);v305PersistBase();v305OpenPage(p.id)
+}
+function v305EditPage(id){
+  const p=state.workspace.pages.find(x=>x.id===id);if(!p)return;
+  const n=prompt("Page 이름",p.name);if(n===null)return;p.name=n.trim()||p.name;p.page.name=p.name;
+  const d=prompt("Page 설명",p.description||"");if(d!==null){p.description=d;p.page.description=d}
+  if(state.workspace.activePageId===id)v305ApplyPage(p);v305PersistBase();v305Render()
+}
+function v305DeletePage(id){
+  if(state.workspace.pages.length<=1)return alert("마지막 Page는 삭제할 수 없습니다.");
+  const p=state.workspace.pages.find(x=>x.id===id);if(!p||!confirm(`"${p.name}" Page를 삭제할까요?\n이 Page의 데이터도 함께 삭제됩니다.`))return;
+  state.workspace.pages=state.workspace.pages.filter(x=>x.id!==id);
+  if(state.workspace.activePageId===id){state.workspace.activePageId=null;document.body.classList.add("v2-main-mode")}
+  v305PersistBase();v305Render()
+}
+function v305RenderTabs(){
+  if(!state.workspace.activePageId){$("tabs").innerHTML="";return}
+  $("tabs").innerHTML=(state.page.tabs||[]).map(t=>`<button class="tab ${t.id===activeTab?"active":""}" data-v305-tab="${t.id}">${esc(t.name)}</button>`).join("");
+  document.querySelectorAll("[data-v305-tab]").forEach(b=>b.onclick=()=>{activeTab=b.dataset.v305Tab;persist();v305Render()});
+}
+renderTabs=v305RenderTabs;
+function v305Render(){
+  v305Ensure();v305RenderSidebar();
+  if(!state.workspace.activePageId){
+    document.body.classList.add("v2-main-mode");$("pageCrumb")&&($("pageCrumb").textContent="Main Page");$("controls").innerHTML="";v305RenderTabs();v305MainView();$("addBtn").classList.add("hidden");return
+  }
+  document.body.classList.remove("v2-main-mode");
+  $("pageCrumb")&&($("pageCrumb").textContent=state.page.name||"새 Page");
+  v305RenderTabs();const t=currentTab();
+  if(!t){$("controls").innerHTML="";$("content").innerHTML='<div class="empty">탭이 없습니다.</div>';return}
+  if(t.type==="bookmark")renderBookmarks();else if(t.type==="tag")renderTags();else if(t.type==="profile")renderProfiles();else if(t.type==="category")renderCategories();else renderCustom();
+  $("addBtn").classList.toggle("hidden",t.type!=="bookmark");
+}
+render=v305Render;
+
+/* v2-style Page settings: Page owns Tabs; Tab order/type remain here. */
+const v305OpenSettings=openSettings;
+openSettings=function(){
+  if(!state.workspace.activePageId)return;
+  v305OpenSettings();
+  const title=$("settingsModal")?.querySelector(".modal-card h2");if(title)title.textContent="Page 설정 · "+state.page.name;
+}
+$("pageSettingsBtn").onclick=openSettings;
+$("v2GoMain").onclick=v305GoMain;$("v2TopMain").onclick=v305GoMain;$("v2NewPage").onclick=v305NewPage;
+
+/* Save Page settings back into the owning Page immediately after modal save. */
+const v305SaveSettings=$("saveSettings").onclick;
+$("saveSettings").onclick=()=>{v305SaveSettings();v305CommitPage();v305PersistBase();v305RenderSidebar()};
+
+/* Initial migration/render. */
+v305Ensure();
+if(state.workspace.activePageId){
+ const p=state.workspace.pages.find(x=>x.id===state.workspace.activePageId);
+ if(p)v305ApplyPage(p);
+}else document.body.classList.add("v2-main-mode");
+v305PersistBase();v305Render();
+
 </script>
 
+</div></div>
 </body></html>

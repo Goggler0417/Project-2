@@ -1,26 +1,26 @@
-# Tagmark v3.02 — v3.01 UI merge rebuild
+# Tagmark v3.05
 
-기준 코드는 v3.01입니다. v3.02~v3.03의 Main/Page 데이터 모델 변경은 가져오지 않았습니다.
+기준: v3.04 UI 통합판 + 신형 v2.10의 Main Page → Page → Tab 시스템 복원.
 
-## 이번 버전의 방향
-구형 UI 편의기능과 v3.01의 Schema 기반 UI를 조합하되, 가능한 한 데이터 구조는 v3.01을 유지했습니다.
+## Main Page
+- v2와 같은 Main 화면
+- Page 카드
+- Page 추가 / 열기 / 이름·설명 수정 / 삭제
+- Main Page 그리드·목록 전환
+- 이름 A→Z / Z→A / 수동 순서 모드
+- 좌측 Page 목록과 Main 버튼
 
-## 주요 UI 변경
-- Bookmark 카드 체크박스 상시 표시
-- 하나 이상 선택하면 Bulk Toolbar 자동 표시
-- 현재 표시 결과 전체 선택 / 선택 해제
-- 선택 Bookmark 태그 추가 / 새 폴더 생성 / 폴더에서 제외 / 복사된 Profile 붙여넣기
-- Bookmark Tag Filter: Tag Head별 접이식 목록, 클릭 순환 `중립 → 포함 → 제외 → 중립`
-- Tag Count: Bookmark 기준, 한 Bookmark 안의 중복은 1회
-- Profile Input을 단순 chip 목록이 아니라 반복되는 독립 박스로 표시
-- Profile Entry별 체크박스, 삭제, 선택 복사
-- 복사한 Profile을 Bookmark Bulk Toolbar에서 여러 Bookmark에 붙여넣기
-- v3.01의 Field/Input/조건부 Input/Tag routing/Profile 종류 설정 유지
-- Tag/Profile/Category/Custom 탭의 공통 검색·정렬·목록/그리드 UI 유지
-- Tag 탭에 Bookmark 기준 사용량 정렬/표시 추가
-- Page breadcrumb를 UI로 추가
+## Page
+- 각 Page가 자신의 Tabs, Schema, Bookmark, Tag, Profile, Category, Folder 데이터를 독립적으로 보유
+- Page 전환 시 현재 Page 상태를 저장하고 대상 Page 상태를 불러옴
+- Page 설정에서 Page 이름과 Tab 구성/순서를 관리
 
-## 주의
-Profile Input 내부의 완전한 Bookmark-local 하위 Field 데이터 구조는 이번 UI 통합에서 새로 만들지 않았습니다. v3.01의 Profile ID 배열 구조를 유지하면서 박스형 UI와 복사/붙여넣기 UX를 먼저 적용했습니다.
+## Tab
+- 기존 v3 Bookmark / Tag / Profile / Category / Custom 탭 유지
+- 탭 클릭 selector를 전용 data-v305-tab으로 분리하여 다른 UI의 data 속성과 충돌하지 않도록 함
+- Page를 이동했다 돌아와도 마지막 활성 Tab을 Page별로 저장
 
-정적 JavaScript 문법 검사를 통과했습니다. 실제 브라우저/iPad 자동 상호작용 테스트는 수행하지 않았습니다.
+## 검증
+- 모든 inline JavaScript에 node --check 수행
+- Chromium headless에서 실제 클릭 기반 상호작용 테스트 수행
+- Main → Page → Tab 전환, 다른 Tab 왕복, Bookmark 수정 modal 열기, Page 전환/복귀를 검사
