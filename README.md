@@ -1,26 +1,29 @@
 # Tagmark v3.05
 
-기준: v3.04 UI 통합판 + 신형 v2.10의 Main Page → Page → Tab 시스템 복원.
+기준: 사용자가 v3.04로 지정한 v3.01 기반 UI 통합판.
 
-## Main Page
-- v2와 같은 Main 화면
-- Page 카드
-- Page 추가 / 열기 / 이름·설명 수정 / 삭제
-- Main Page 그리드·목록 전환
-- 이름 A→Z / Z→A / 수동 순서 모드
-- 좌측 Page 목록과 Main 버튼
-
-## Page
-- 각 Page가 자신의 Tabs, Schema, Bookmark, Tag, Profile, Category, Folder 데이터를 독립적으로 보유
-- Page 전환 시 현재 Page 상태를 저장하고 대상 Page 상태를 불러옴
-- Page 설정에서 Page 이름과 Tab 구성/순서를 관리
-
-## Tab
-- 기존 v3 Bookmark / Tag / Profile / Category / Custom 탭 유지
-- 탭 클릭 selector를 전용 data-v305-tab으로 분리하여 다른 UI의 data 속성과 충돌하지 않도록 함
-- Page를 이동했다 돌아와도 마지막 활성 Tab을 Page별로 저장
+## 수정
+- 탭 내비게이션을 `data-nav-tab` 전용 selector/controller로 분리.
+- Bookmark → 다른 탭 → Bookmark 왕복 시 이전 탭 내용이 남는 치명적 렌더링 오류 수정.
+- Bookmark 선택 Toolbar의 모든 버튼을 다시 연결.
+- Page Settings에서 Field/Tag Head 설정 제거.
+- Page Settings는 페이지 이름, 탭 순서/삭제, 가져오기, 내보내기, 페이지 DB 초기화만 제공.
+- 각 탭에 `필드 설정` 버튼 추가. Field/Input 등록·수정·저장을 현재 탭에서 수행.
+- 별도 `탭 설정` 추가. 현재 탭 이름/유형 설정 및 새 탭 추가. 유형은 북마크/프로필/태그/카테고리 4종.
+- 별도 `태그 머리` 관리 팝업 추가. 추가/이름/색상/순서/삭제를 한 화면에서 관리.
+- Tag Head 삭제 시 관련 Tag와 참조를 정리.
 
 ## 검증
-- 모든 inline JavaScript에 node --check 수행
-- Chromium headless에서 실제 클릭 기반 상호작용 테스트 수행
-- Main → Page → Tab 전환, 다른 Tab 왕복, Bookmark 수정 modal 열기, Page 전환/복귀를 검사
+- 모든 inline JavaScript `node --check`.
+- Chromium headless + DevTools Protocol로 실제 클릭/입력 상호작용 테스트 수행.
+
+## 실제 Chromium 상호작용 검사
+통과:
+- 북마크 → 태그/프로필/카테고리 → 북마크 반복 왕복
+- 왕복 후 Bookmark 카드 재렌더링 및 수정 Modal 열기
+- 체크박스 → 선택 Toolbar 자동 표시
+- 현재 목록 전체 선택 / 선택 해제 / 태그 추가 / 폴더 생성 / 폴더에서 제외 / Profile 붙여넣기
+- Page Settings 열기, Field/Tag Head 설정이 섞이지 않는지 확인, 페이지 이름 저장
+- Tab Settings 열기, 4개 유형 확인, Profile 탭 실제 추가
+- 탭별 Field Settings 열기, Field 편집 Modal 및 저장
+- Tag Head Manager 열기, Head 추가 및 이름 변경 저장
